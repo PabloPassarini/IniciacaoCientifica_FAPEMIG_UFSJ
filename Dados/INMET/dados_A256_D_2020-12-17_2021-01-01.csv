@@ -1,0 +1,28 @@
+Nome: SANTA MARIA DAS BARREIRAS
+Codigo Estacao: A256
+Latitude: -8.72972221
+Longitude: -49.85638888
+Altitude: 165
+Situacao: Operante
+Data Inicial: 2020-12-17
+Data Final: 2021-01-01
+Periodicidade da Medicao: Diaria
+
+Data Medicao;PRECIPITACAO TOTAL, DIARIO (AUT)(mm);PRESSAO ATMOSFERICA MEDIA DIARIA (AUT)(mB);TEMPERATURA DO PONTO DE ORVALHO MEDIA DIARIA (AUT)(°C);TEMPERATURA MAXIMA, DIARIA (AUT)(°C);TEMPERATURA MEDIA, DIARIA (AUT)(°C);TEMPERATURA MINIMA, DIARIA (AUT)(°C);UMIDADE RELATIVA DO AR, MEDIA DIARIA (AUT)(%);UMIDADE RELATIVA DO AR, MINIMA DIARIA (AUT)(%);VENTO, RAJADA MAXIMA DIARIA (AUT)(m/s);VENTO, VELOCIDADE MEDIA DIARIA (AUT)(m/s);
+2020-12-17;null;null;null;null;null;null;null;null;null;null;
+2020-12-18;null;null;null;null;null;null;null;null;null;null;
+2020-12-19;null;null;null;null;null;null;null;null;null;null;
+2020-12-20;null;null;null;null;null;null;null;null;null;null;
+2020-12-21;null;null;null;null;null;null;null;null;null;null;
+2020-12-22;null;null;null;null;null;null;null;null;null;null;
+2020-12-23;null;null;null;null;null;null;null;null;null;null;
+2020-12-24;null;null;null;null;null;null;null;null;null;null;
+2020-12-25;null;null;null;null;null;null;null;null;null;null;
+2020-12-26;null;null;null;null;null;null;null;null;null;null;
+2020-12-27;null;null;null;null;null;null;null;null;null;null;
+2020-12-28;null;null;null;null;null;null;null;null;null;null;
+2020-12-29;null;null;null;null;null;null;null;null;null;null;
+2020-12-30;null;null;null;null;null;null;null;null;null;null;
+2020-12-31;null;null;null;null;null;null;null;null;null;null;
+2021-01-01;null;null;null;null;null;null;null;null;null;null;
+

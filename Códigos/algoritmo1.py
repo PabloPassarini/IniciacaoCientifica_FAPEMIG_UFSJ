@@ -3,7 +3,7 @@ import csv, os
 os.system('cls') # Limpando o terminal
 
 
-def Obter_dados(diretorio):
+def get_data(diretorio):
     aux = list()
     with open(diretorio) as arq:
         reader = csv.reader(arq)
@@ -42,11 +42,53 @@ def Obter_dados(diretorio):
 
     return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [data, precipitação, temperatura max, temperatura min]
 
+def get_coordinates(diretorio):
+    aux = list()
+    with open(diretorio) as arq:
+        reader = csv.reader(arq)
+        for i in reader:
+            aux.append(i)
+        
+    del aux[10:]
 
-targetData = Obter_dados(r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv')
-neighorAData = Obter_dados(r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv')
-neighorBData = Obter_dados(r'E:\IC\Dados\TriangulacaoBH\IBIRITE.csv')
-neighorCData = Obter_dados(r'E:\IC\Dados\TriangulacaoBH\SETELAGOAS.csv')
+    estacao = str(aux[0]).split(':')
+    estacao = estacao[1].strip(']')
+    estacao = (estacao.strip("'")).strip()
 
-soma = (len(targetData) + len(neighorAData) + len(neighorBData) + len(neighorCData))*4
-print(soma)
+    latitude = str(aux[2]).split(':')
+    latitude = latitude[1].strip(']')
+    latitude = (latitude.strip("'")).strip()
+
+    longitude = str(aux[3]).split(':')
+    longitude = longitude[1].strip(']')
+    longitude = (longitude.strip("'")).strip()
+
+    altitude = str(aux[4]).split(':')
+    altitude = altitude[1].strip(']')
+    altitude = (altitude.strip("'")).strip()
+
+    aux.clear()
+
+    aux.append(estacao)
+    aux.append(latitude)
+    aux.append(longitude)
+    aux.append(altitude)
+    return aux
+
+
+target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
+neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
+neighorB = r'E:\IC\Dados\TriangulacaoBH\IBIRITE.csv'
+neighorC = r'E:\IC\Dados\TriangulacaoBH\SETELAGOAS.csv'
+
+targetData = get_data(target)
+neighorAData = get_data(neighorA)
+neighorBData = get_data(neighorB)
+neighorCData = get_data(neighorC)
+
+
+coord_target = get_coordinates(target)
+coord_neighorA = get_coordinates(neighorA)
+coord_neighorB = get_coordinates(neighorB)
+coord_neighorC = get_coordinates(neighorC)
+

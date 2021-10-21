@@ -21,16 +21,13 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
         aux[i] = str(aux[i]).split(';')
 
         del aux[i][9] #Remove a ultima coluna, pois ela fica vazia, ('')
-
+   
         #Remove as outras colunas, deixando somente a de data, precipitação, temperatura max e temperatura min
+
         del aux[i][1:3]
         del aux[i][3]
         del aux[i][4:6]
 
-    ''' -> Para visualizar os dados salvos <-
-    for i in aux:
-        print(i)
-    '''
     real = list() #Lista/Matriz final
 
     #Removendo todas as linhas que possuem o valor null
@@ -43,6 +40,18 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
         if condicao == 0:
             real.append(aux[i])
 
+    
+    for i in range(len(real)):
+        aux.clear()
+        for j in range(4):
+            aux.append(real[i][j])
+        data = aux[0]
+        data = str(data).split('-')
+        #print(data)
+        real[i].insert(0, data[0])
+        real[i].insert(1, data[1])
+        real[i].insert(2, data[2])
+        del real[i][3]
 
     return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [data, precipitação, temperatura max, temperatura min]
 
@@ -81,26 +90,42 @@ def get_coordinates(diretorio): #Função para obter as coordenadas de cada cida
     return aux #Retorna um 'vetor' com os dados: [nome da estação, latitude, longitude, altitude]
 
 def normaliza_dados(lista): #Função que retorna a matriz com os dados normalizados
-    menor = float(lista[0][1])
-    maior = menor
-    aux = list()
+    max_min = list()
+    aux1 = list()
+    for i in range(6): #Colocando os min e os max de cada coluna da lista tratada (anteriormente) em uma outra lista, fica assim: [ano min, ano max, mes min, mes max, precipitação min, precipitação max, temp max min, temp max max, temp min min, temp min max]
+        aux1.clear()
+        for j in range(len(lista)):
+            aux1.append(float(lista[j][i]))
+        max_min.append(min(aux1))
+        max_min.append(max(aux1))  
+    
     dadosn = list()
     
-    for i in range(len(lista)): #Encontrar o maior e o menor valor de uma coluna especifica 
-        valor = float(lista[i][1])
-        
-        if valor < menor:
-            menor = valor
-        if valor > maior:
-            maior = valor
-    
     for i in range(len(lista)):
-        dado = ((float(lista[i][1])-menor)/(maior - menor))*0.6 + 0.2
-        aux.clear()             #'Resetando' a lista aux
-        aux.append(lista[i][0]) #Inserindo a data numa lista aux
-        aux.append(dado)        #Inserindo o dado normalizado na lista aux
+        aux1.clear()
+        for j in range(6):
+            if j == 0: #Ano
+                menor = max_min[0]
+                maior = max_min[1]
+            elif j == 1: #Mes
+                menor = max_min[2]
+                maior = max_min[3]
+            elif j == 2: #Dia
+                menor = max_min[4]
+                maior = max_min[5]
+            elif j == 3: #Precipitação
+                menor = max_min[6]
+                maior = max_min[7]
+            elif j == 4: #Temperatura max
+                menor = max_min[8]
+                maior = max_min[9]
+            elif j == 5: #Temperatura min
+                menor = max_min[10]
+                maior = max_min[11]
 
-        dadosn.append(aux)      #Inserindo a lista aux dentro da lista dadosn (que em outra linguem, eu estaria criando uma nova linha em uma matriz)
+            dado = ((float(lista[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
+            aux1.append(dado)
+        dadosn.append(aux1)
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'

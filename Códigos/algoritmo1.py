@@ -1,5 +1,7 @@
-import csv, os
-
+import csv, os, math
+import numpy as np
+from numpy.core import multiarray
+from numpy.matrixlib import mat
 os.system('cls') # Limpando o terminal
 
 
@@ -55,6 +57,21 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
 
     return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [data, precipitação, temperatura max, temperatura min]
 
+def converte_coord(dado):
+    dado = list(math.modf(dado))
+    grau = int(dado[1])
+
+    resto = dado[0]*60
+    if resto < 0:
+        resto = resto * (-1)
+    
+    resto = list(math.modf(resto))
+    minuto = int(resto[1])
+    segundos = round(resto[0]*60,4)
+
+    return str(grau) + "° " + str(minuto) + "' " + str(segundos) + '" '
+
+
 def get_coordinates(diretorio): #Função para obter as coordenadas de cada cidade
     aux = list()
     with open(diretorio) as arq:
@@ -81,12 +98,16 @@ def get_coordinates(diretorio): #Função para obter as coordenadas de cada cida
     altitude = altitude[1].strip(']')
     altitude = (altitude.strip("'")).strip()
 
+    latitude = converte_coord(float(latitude))
+    longitude = converte_coord(float(longitude))   
+ 
     aux.clear()
-
     aux.append(estacao)
     aux.append(latitude)
     aux.append(longitude)
     aux.append(altitude)
+
+ 
     return aux #Retorna um 'vetor' com os dados: [nome da estação, latitude, longitude, altitude]
 
 def normaliza_dados(lista): #Função que retorna a matriz com os dados normalizados
@@ -133,6 +154,7 @@ neighorB = r'E:\IC\Dados\TriangulacaoBH\IBIRITE.csv'
 neighorC = r'E:\IC\Dados\TriangulacaoBH\SETELAGOAS.csv'
 
 targetData = get_data(target)
+
 neighorAData = get_data(neighorA)
 neighorBData = get_data(neighorB)
 neighorCData = get_data(neighorC)
@@ -144,3 +166,8 @@ coord_neighorB = get_coordinates(neighorB)
 coord_neighorC = get_coordinates(neighorC)
 
 normaliza_dados(targetData)
+
+print(coord_target[1])
+print(coord_neighorA[1])
+print(coord_neighorB[1])
+print(coord_neighorC[1])

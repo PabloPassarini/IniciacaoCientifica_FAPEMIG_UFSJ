@@ -1,7 +1,8 @@
 import csv, os, math
+from haversine import haversine, Unit
 import numpy as np
-from numpy.core import multiarray
-from numpy.matrixlib import mat
+from numpy import ma
+
 os.system('cls') # Limpando o terminal
 
 
@@ -71,7 +72,6 @@ def converte_coord(dado):
 
     return str(grau) + "° " + str(minuto) + "' " + str(segundos) + '" '
 
-
 def get_coordinates(diretorio): #Função para obter as coordenadas de cada cidade
     aux = list()
     with open(diretorio) as arq:
@@ -97,10 +97,10 @@ def get_coordinates(diretorio): #Função para obter as coordenadas de cada cida
     altitude = str(aux[4]).split(':')
     altitude = altitude[1].strip(']')
     altitude = (altitude.strip("'")).strip()
-
+    '''
     latitude = converte_coord(float(latitude))
     longitude = converte_coord(float(longitude))   
- 
+    '''
     aux.clear()
     aux.append(estacao)
     aux.append(latitude)
@@ -147,27 +147,47 @@ def normaliza_dados(lista): #Função que retorna a matriz com os dados normaliz
             dado = ((float(lista[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
             aux1.append(dado)
         dadosn.append(aux1)
+    return dadosn
+
+def haversine_calc(a,b):
+    tupla_1 = (float(a[1]), float(a[2]))
+    tupla_2 = (float(b[1]), float(b[2]))
+
+    return round(haversine(tupla_1, tupla_2, Unit.KILOMETERS), 4) #Retorna a distancia entre as duas cidades em Km, com 4 casas decimais
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
 neighorB = r'E:\IC\Dados\TriangulacaoBH\IBIRITE.csv'
 neighorC = r'E:\IC\Dados\TriangulacaoBH\SETELAGOAS.csv'
 
+"""  ->Obtendo dados de cada cidade<-  """
 targetData = get_data(target)
-
 neighorAData = get_data(neighorA)
 neighorBData = get_data(neighorB)
 neighorCData = get_data(neighorC)
 
-
+"""  ->Obtendo coordenadas de cada cidade<-  """
 coord_target = get_coordinates(target)
 coord_neighorA = get_coordinates(neighorA)
 coord_neighorB = get_coordinates(neighorB)
 coord_neighorC = get_coordinates(neighorC)
 
-normaliza_dados(targetData)
+#print(normaliza_dados(targetData))
+"""  ->Normalizando dados de cada cidade<-  """
+target_dadosn = normaliza_dados(targetData)
+neighorA_dadosn = normaliza_dados(neighorAData)
+neighorB_dadosn = normaliza_dados(neighorBData)
+neighorC_dadosn = normaliza_dados(neighorCData)
 
-print(coord_target[1])
-print(coord_neighorA[1])
-print(coord_neighorB[1])
-print(coord_neighorC[1])
+""""  ->Calculando a distancia entre as cidades<-  """
+d1 = haversine_calc(coord_target, coord_neighorA) #Para a maior compreensão coloquei cada distancia em uma variavel, podia colocar direto na tupla 'd' (3 linhas a frente)
+d2 = haversine_calc(coord_target, coord_neighorB)
+d3 = haversine_calc(coord_target, coord_neighorC)
+
+
+"""  ->Colocando a distancias entre cada cidade em uma tupla, e a altitude de cada uma em outra tupla<-  """
+d = (d1, d2, d3) #Vetor com as distancias (Km) entre a cidade alvo e as 3 cidades vizinhas
+h = (float(coord_target[3]), float(coord_neighorA[3]), float(coord_neighorB[3]), float(coord_neighorC[3])) #Alvo, vizinhaA, vizinhaB, vizinhaC
+
+print(d)
+print(h)

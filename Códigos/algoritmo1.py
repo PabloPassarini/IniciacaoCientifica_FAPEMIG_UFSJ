@@ -1,7 +1,6 @@
-import csv, os, math
+import csv, os, math,sys
 from haversine import haversine, Unit
-import numpy as np
-from numpy import ma
+
 
 os.system('cls') # Limpando o terminal
 
@@ -44,19 +43,19 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
             real.append(aux[i])
 
     
-    for i in range(len(real)):
+    for i in range(len(real)): #Separando o dia, mes e ano da string
         aux.clear()
         for j in range(4):
             aux.append(real[i][j])
         data = aux[0]
         data = str(data).split('-')
         #print(data)
-        real[i].insert(0, data[0])
-        real[i].insert(1, data[1])
-        real[i].insert(2, data[2])
+        real[i].insert(0, int(data[0]))
+        real[i].insert(1, int(data[1]))
+        real[i].insert(2, int(data[2]))
         del real[i][3]
 
-    return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [data, precipitação, temperatura max, temperatura min]
+    return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [ano, mes, dia, precipitação, temperatura max, temperatura min]
 
 def converte_coord(dado):
     dado = list(math.modf(dado))
@@ -155,6 +154,73 @@ def haversine_calc(a,b):
 
     return round(haversine(tupla_1, tupla_2, Unit.KILOMETERS), 4) #Retorna a distancia entre as duas cidades em Km, com 4 casas decimais
 
+def janela_5anos(cid1,cid2,cid3,cid4):
+    ano_ini = max([cid1[0][0], cid2[0][0], cid3[0][0], cid4[0][0]])
+    fim = min(len(cid1), len(cid2), len(cid3), len(cid4))
+    
+    for i in range(len(cid1)):
+        if ano_ini == cid1[i][0]:
+            ind1 = i
+            break
+    for i in range(len(cid2)):
+        if ano_ini == cid2[i][0]:
+            ind2 = i
+            break
+    for i in range(len(cid3)):
+        if ano_ini == cid3[i][0]:
+            ind3 = i
+            break
+    for i in range(len(cid4)):
+        if ano_ini == cid4[i][0]:
+            ind4 = i
+            break
+
+    final = list()
+    aux = list()
+    arq = open(r'E:\IC\Códigos\analise.txt', 'w')
+    for i in range(fim):
+        ano1 = cid1[ind1+i][0]
+        mes1 = cid1[ind1+i][1]
+        dia1 = cid1[ind1+i][2]
+        cond1 = 0
+        for j in range(fim):
+            ano2 = cid2[ind2+j][0]
+            mes2 = cid2[ind2+j][1]
+            dia2 = cid2[ind2+j][2]
+
+            if (ano1 == ano2) and (mes1 == mes2) and (dia1 == dia2):
+                for k in range(fim):
+                    ano3 = cid3[ind3+k][0]
+                    mes3 = cid3[ind3+k][1]
+                    dia3 = cid3[ind3+k][2] 
+                    if (ano2 == ano3) and (mes2 == mes3) and (dia2 == dia3):
+                            for z in range(fim):
+                                ano4 = cid4[ind4+z][0]
+                                mes4 = cid4[ind4+z][1]
+                                dia4 = cid4[ind4+z][2]
+                                if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
+                                    aux.clear()
+                                    
+                                    aux.append(cid1[ind1+i])
+                                    aux.append(cid2[ind2+j])
+                                    aux.append(cid3[ind3+k])
+                                    aux.append(cid4[ind4+z])
+                                    buff = ""
+                                    for seila in range(len(aux)):
+                                        buff = buff + str(aux[seila]) + " "
+                                    arq.write(str(buff))
+                                    arq.write(str('\n'))
+                                    
+                                    #final.insert(0,)
+                                    cond1 = 1
+                                    break
+                                    
+                    if (cond1 == 1):
+                        break
+
+            if(cond1 == 1):
+                break
+
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
 neighorB = r'E:\IC\Dados\TriangulacaoBH\IBIRITE.csv'
@@ -189,5 +255,4 @@ d3 = haversine_calc(coord_target, coord_neighorC)
 d = (d1, d2, d3) #Vetor com as distancias (Km) entre a cidade alvo e as 3 cidades vizinhas
 h = (float(coord_target[3]), float(coord_neighorA[3]), float(coord_neighorB[3]), float(coord_neighorC[3])) #Alvo, vizinhaA, vizinhaB, vizinhaC
 
-print(d)
-print(h)
+janela_5anos(targetData, neighorAData, neighorBData, neighorCData)

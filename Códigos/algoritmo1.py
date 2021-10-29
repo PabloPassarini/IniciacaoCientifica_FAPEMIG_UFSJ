@@ -112,7 +112,7 @@ def get_coordinates(diretorio): #Função para obter as coordenadas de cada cida
 def normaliza_dados(lista): #Função que retorna a matriz com os dados normalizados
     max_min = list()
     aux1 = list()
-    for i in range(6): #Colocando os min e os max de cada coluna da lista tratada (anteriormente) em uma outra lista, fica assim: [ano min, ano max, mes min, mes max, precipitação min, precipitação max, temp max min, temp max max, temp min min, temp min max]
+    for i in range(15): #Colocando os min e os max de cada coluna da lista tratada (anteriormente) em uma outra lista, fica assim: [ano min, ano max, mes min, mes max, precipitação min, precipitação max, temp max min, temp max max, temp min min, temp min max]
         aux1.clear()
         for j in range(len(lista)):
             aux1.append(float(lista[j][i]))
@@ -120,10 +120,10 @@ def normaliza_dados(lista): #Função que retorna a matriz com os dados normaliz
         max_min.append(max(aux1))  
     
     dadosn = list()
-    
+    #arq_teste = open("teste.txt", "w") Um arquivo só para manter os dados normalizados guardado
     for i in range(len(lista)):
         aux1.clear()
-        for j in range(6):
+        for j in range(15):
             if j == 0: #Ano
                 menor = max_min[0]
                 maior = max_min[1]
@@ -142,10 +142,40 @@ def normaliza_dados(lista): #Função que retorna a matriz com os dados normaliz
             elif j == 5: #Temperatura min
                 menor = max_min[10]
                 maior = max_min[11]
+            elif j == 6: #Precipitação
+                menor = max_min[12]
+                maior = max_min[13]
+            elif j == 7: #Temperatura max
+                menor = max_min[14]
+                maior = max_min[15]
+            elif j == 8: #Temperatura min
+                menor = max_min[16]
+                maior = max_min[17]
+            elif j == 9: #Precipitação
+                menor = max_min[18]
+                maior = max_min[19]
+            elif j == 10: #Temperatura max
+                menor = max_min[20]
+                maior = max_min[21]
+            elif j == 11: #Temperatura min
+                menor = max_min[22]
+                maior = max_min[23]
+            elif j == 12: #Precipitação
+                menor = max_min[24]
+                maior = max_min[25]
+            elif j == 13: #Temperatura max
+                menor = max_min[26]
+                maior = max_min[27]
+            elif j == 14: #Temperatura min
+                menor = max_min[28]
+                maior = max_min[29]
+            
 
             dado = ((float(lista[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
+            
             aux1.append(dado)
         dadosn.append(aux1)
+        #arq_teste.write(str(aux1[:])+"\n")
     return dadosn
 
 def haversine_calc(a,b):
@@ -154,7 +184,7 @@ def haversine_calc(a,b):
 
     return round(haversine(tupla_1, tupla_2, Unit.KILOMETERS), 4) #Retorna a distancia entre as duas cidades em Km, com 4 casas decimais
 
-def janela_5anos(cid1,cid2,cid3,cid4):
+def dados_comum(cid1,cid2,cid3,cid4):
     ano_ini = max([cid1[0][0], cid2[0][0], cid3[0][0], cid4[0][0]])
     fim = min(len(cid1), len(cid2), len(cid3), len(cid4))
     
@@ -177,7 +207,7 @@ def janela_5anos(cid1,cid2,cid3,cid4):
 
     final = list()
     aux = list()
-    arq = open(r'E:\IC\Códigos\analise.txt', 'w')
+    arq = open(r'E:\IC\Códigos\analise.csv', 'w')
     for i in range(fim):
         ano1 = cid1[ind1+i][0]
         mes1 = cid1[ind1+i][1]
@@ -201,25 +231,27 @@ def janela_5anos(cid1,cid2,cid3,cid4):
                                 if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
                                     aux.clear()
                                     
-                                    aux.append(cid1[ind1+i])
-                                    aux.append(cid2[ind2+j])
-                                    aux.append(cid3[ind3+k])
-                                    aux.append(cid4[ind4+z])
-                                    buff = ""
-                                    for seila in range(len(aux)):
-                                        buff = buff + str(aux[seila]) + " "
-                                    arq.write(str(buff))
-                                    arq.write(str('\n'))
+                                    """  -> Adicionando os dados numa lista <-  """
+                                    buff = ''   
+                                    buff = str(ano1) + " " + str(mes1) + " " + str(dia1) + " " + cid1[ind1+i][3] + " " + cid1[ind1+i][4] + " " + cid1[ind1+i][5] + " " + cid2[ind2+j][3] + " " + cid2[ind2+j][4] + " " + cid2[ind2+j][5] + " " + cid3[ind3+k][3] + " " + cid3[ind3+k][4] + " " + cid3[ind3+k][5] + " " + cid4[ind4+z][3] + " " + cid4[ind4+z][4] + " " + cid4[ind4+z][5]  
+                                    buff = str(buff).split()
+                                    final.append(buff)
                                     
-                                    #final.insert(0,)
+                                    """  -> Adicinando os dados num arquivo .csv <-  """
+                                    buff = ''
+                                    buff = str(ano1) + ";" + str(mes1) + ";" + str(dia1) + ";" + cid1[ind1+i][3] + ";" + cid1[ind1+i][4] + ";" + cid1[ind1+i][5] + ";" + cid2[ind2+j][3] + ";" + cid2[ind2+j][4] + ";" + cid2[ind2+j][5] + ";" + cid3[ind3+k][3] + ";" + cid3[ind3+k][4] + ";" + cid3[ind3+k][5] + ";" + cid4[ind4+z][3] + ";" + cid4[ind4+z][4] + ";" + cid4[ind4+z][5] + ";\n"
+                                    arq.write(buff)
+                        
                                     cond1 = 1
                                     break
-                                    
+                                                
                     if (cond1 == 1):
                         break
-
+                        
             if(cond1 == 1):
                 break
+    return final
+
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
@@ -239,11 +271,6 @@ coord_neighorB = get_coordinates(neighorB)
 coord_neighorC = get_coordinates(neighorC)
 
 #print(normaliza_dados(targetData))
-"""  ->Normalizando dados de cada cidade<-  """
-target_dadosn = normaliza_dados(targetData)
-neighorA_dadosn = normaliza_dados(neighorAData)
-neighorB_dadosn = normaliza_dados(neighorBData)
-neighorC_dadosn = normaliza_dados(neighorCData)
 
 """"  ->Calculando a distancia entre as cidades<-  """
 d1 = haversine_calc(coord_target, coord_neighorA) #Para a maior compreensão coloquei cada distancia em uma variavel, podia colocar direto na tupla 'd' (3 linhas a frente)
@@ -255,4 +282,8 @@ d3 = haversine_calc(coord_target, coord_neighorC)
 d = (d1, d2, d3) #Vetor com as distancias (Km) entre a cidade alvo e as 3 cidades vizinhas
 h = (float(coord_target[3]), float(coord_neighorA[3]), float(coord_neighorB[3]), float(coord_neighorC[3])) #Alvo, vizinhaA, vizinhaB, vizinhaC
 
-janela_5anos(targetData, neighorAData, neighorBData, neighorCData)
+
+"""  ->Normalizando dados<-  """
+comon_data = dados_comum(targetData, neighorAData, neighorBData, neighorCData)
+datan = normaliza_dados(comon_data)
+

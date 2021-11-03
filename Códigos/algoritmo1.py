@@ -1,9 +1,7 @@
 import csv, os, math,sys
 from haversine import haversine, Unit
 
-
 os.system('cls') # Limpando o terminal
-
 
 def get_data(diretorio): #Função para a aquisição e tratamento dos dados
     aux = list()
@@ -252,6 +250,134 @@ def dados_comum(cid1,cid2,cid3,cid4):
                 break
     return final
 
+def divisor_dados(data, tipo):
+    if tipo == "tri":
+        t1, t2, t3, t4 = [],[],[],[]
+        for i in range(len(data)):
+            if data[i][1] == 1 or data[i][1] == 2 or data[i][1] == 3:
+                t1.append(data[i])
+            elif data[i][1] == 4 or data[i][1] == 5 or data[i][1] == 6:
+                t2.append(data[i])
+            elif data[i][1] == 7 or data[i][1] == 8 or data[i][1] == 9:
+                t3.append(data[i])
+            else:
+                t4.append(data[i])
+        
+        return t1,t2,t3,t4
+    
+    if tipo == "men":
+        jan, fev, mar, abr, mai, jun, jul, ago, sete, outb, nov, dez = [], [], [], [], [], [], [], [], [], [], [], []
+
+        for i in range(len(data)):
+            if data[i][1] == 1:
+                jan.append(data[i])
+            elif data[i][2] == 2:
+                fev.append(data[i])
+            elif data[i][2] == 3:
+                mar.append(data[i])
+            elif data[i][2] == 4:
+                abr.append(data[i])
+            elif data[i][2] == 5:
+                mai.append(data[i])
+            elif data[i][2] == 6:
+                jun.append(data[i])
+            elif data[i][2] == 7:
+                jul.append(data[i])
+            elif data[i][2] == 8:
+                ago.append(data[i])
+            elif data[i][2] == 9:
+                sete.append(data[i])
+            elif data[i][2] == 10:
+                outb.append(data[i])
+            elif data[i][2] == 11:
+                nov.append(data[i])
+            elif data[i][2] == 12:
+                dez.append(data[i])
+
+        return [jan, fev, mar, abr, mai, jun, jul, ago, sete, outb, nov, dez] # exemp.: teste[mes][linha de cada mes]
+
+def iMAD_tri(data):
+   
+    aux_m = list() #Lista auxiliar com a "indicação" de quais meses são 
+    aux_m.append(data[0][1]) 
+    sp = [0,0,0]      #Soma dos dados de precipitação       (Como é trimestre, cada posição dessa lista é referente a um mês)
+    stmax = [0,0,0]   #Soma dos dados de temperatura máxima   ''  
+    stmin = [0,0,0]   #Soma dos dados de temperatura mínima   ''
+    cont = [0,0,0]    #Contador                               ''
+    for i in range(len(data)):         
+        if aux_m.count(data[i][1]) == 0:     #Adicionando os meses do trimestre na lista
+            aux_m.append(data[i][1])
+    
+    """  -> Calculando a média mensal de cada indice <-  """
+    for i in range(len(data)):               
+        if data[i][1] == aux_m[0]:
+            sp[0] = sp[0] + float(data[i][3])
+            stmax[0] = stmax[0] + float(data[i][4])
+            stmin[0] = stmin[0] + float(data[i][5])
+            cont[0] = cont[0] + 1
+        elif data[i][1] == aux_m[1]:
+            sp[1] = sp[1] + float(data[i][3])
+            stmax[1] = stmax[1] + float(data[i][4])
+            stmin[1] = stmin[1] + float(data[i][5])
+            cont[1] = cont[1] + 1
+        elif data[i][1] == aux_m[2]:
+            sp[2] = sp[2] + float(data[i][3])
+            stmax[2] = stmax[2] + float(data[i][4])
+            stmin[2] = stmin[2] + float(data[i][5])
+            cont[2] = cont[2] + 1
+    
+    aux = list()
+    imad = list()
+    arq = open("imad.txt", "w")
+    for i in range(len(data)):
+        aux.clear()
+        if data[i][1] == aux_m[0]:
+            aux.append(data[i][0])
+            aux.append(data[i][1])
+            aux.append(data[i][2])
+            aux.append(round(sp[0]/cont[0],4))
+            aux.append(float(data[i][3]))
+            aux.append(round(stmax[0]/cont[0],4))
+            aux.append(float(data[i][4]))
+            aux.append(round(stmin[0]/cont[0],4))
+            aux.append(float(data[i][5]))
+            #imad.append(aux)
+        elif data[i][1] == aux_m[1]:
+            aux.append(data[i][0])
+            aux.append(data[i][1])
+            aux.append(data[i][2])
+            aux.append(round(sp[1]/cont[1],4))
+            aux.append(float(data[i][3]))
+            aux.append(round(stmax[1]/cont[1],4))
+            aux.append(float(data[i][4]))
+            aux.append(round(stmin[1]/cont[1],4))
+            aux.append(float(data[i][5]))
+            #imad.append(aux)
+        elif data[i][1] == aux_m[2]:
+            aux.append(data[i][0])
+            aux.append(data[i][1])
+            aux.append(data[i][2])
+            aux.append(round(sp[2]/cont[2],4))
+            aux.append(float(data[i][3]))
+            aux.append(round(stmax[2]/cont[2],4))
+            aux.append(float(data[i][4]))
+            aux.append(round(stmin[2]/cont[2],4))
+            aux.append(float(data[i][5]))
+        
+
+        """ -> provisorio <-  """
+        buff = ''
+        for i in range(8):
+            buff = buff + str(aux[i]) + " "
+        buff = buff.split()
+
+        imad.append(buff)
+        arq.write(str(aux))
+        arq.write('\n')
+    arq.close()
+    
+    return imad  #Retorna uma matrix onde [ano, mes, dia, media_mensal_preci, precipitação, media_mensal_tmax, tmax, media_mensal_tmin]
+
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
@@ -284,6 +410,8 @@ h = (float(coord_target[3]), float(coord_neighorA[3]), float(coord_neighorB[3]),
 
 
 """  ->Normalizando dados<-  """
+"""
 comon_data = dados_comum(targetData, neighorAData, neighorBData, neighorCData)
 datan = normaliza_dados(comon_data)
-
+"""
+t1,t2,t3,t4 = divisor_dados(targetData, "tri")

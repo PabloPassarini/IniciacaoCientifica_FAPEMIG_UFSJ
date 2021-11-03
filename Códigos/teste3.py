@@ -1,8 +1,6 @@
-a = 1
-b = 1
-c = 1
-
-if a == b == c:
-    print('1')
-else:
-    print("2")
+a = ['a','b','c']
+b = ['d','e','f']
+c = list()
+c.append(a)
+c.append(b)
+print(c[1][1:3])

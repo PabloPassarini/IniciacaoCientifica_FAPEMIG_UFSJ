@@ -1,4 +1,4 @@
-import csv, os, math,sys
+import csv, os, math
 from haversine import haversine, Unit
 
 os.system('cls') # Limpando o terminal
@@ -254,11 +254,11 @@ def divisor_dados(data, tipo):
     if tipo == "tri":
         t1, t2, t3, t4 = [],[],[],[]
         for i in range(len(data)):
-            if data[i][1] == 1 or data[i][1] == 2 or data[i][1] == 3:
+            if (data[i][1] == 1 or data[i][1] == 2 or data[i][1] == 3) or (data[i][1] == "1" or data[i][1] == "2" or data[i][1] == "3"):
                 t1.append(data[i])
-            elif data[i][1] == 4 or data[i][1] == 5 or data[i][1] == 6:
+            elif (data[i][1] == 4 or data[i][1] == 5 or data[i][1] == 6) or (data[i][1] == "4" or data[i][1] == "5" or data[i][1] == "6"):
                 t2.append(data[i])
-            elif data[i][1] == 7 or data[i][1] == 8 or data[i][1] == 9:
+            elif (data[i][1] == 7 or data[i][1] == 8 or data[i][1] == 9) or (data[i][1] == "7" or data[i][1] == "8" or data[i][1] == "9"):
                 t3.append(data[i])
             else:
                 t4.append(data[i])
@@ -328,7 +328,7 @@ def iMAD_tri(data):
     
     aux = list()
     imad = list()
-    arq = open("imad.txt", "w")
+    arq = open("imad_1.csv", "w")
     for i in range(len(data)):
         aux.clear()
         if data[i][1] == aux_m[0]:
@@ -378,6 +378,67 @@ def iMAD_tri(data):
     
     return imad  #Retorna uma matrix onde [ano, mes, dia, media_mensal_preci, precipitação, media_mensal_tmax, tmax, media_mensal_tmin]
 
+def iMad_tri_v2(data):
+    #soma precipitação cid1, stmax cid1, stmin cid1, spcid2, stmaxcid2, stmincid3 ... cont
+    aux = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    soma_tudo = list()
+    lista_index = list()
+
+    for i in range(len(data)):
+        try:
+            if data[i][1] == data[i+1][1]:
+                
+                for j in range(13):
+                    if j == 12:
+                        aux[j] = aux[j] + 1
+                    else:
+                        
+                        aux[j] = round(aux[j] + (float(data[i][j+3])),4)
+            else:
+                lista_index.append(i)
+                soma_tudo.append(aux) #matrix onde cada linha é da seguinte forma: ind 0 - 11 (total 12) [soma_preci_cid1, soma_tmax_cid1, soma_tmin_cid1, ...soma_preci_cid4, soma_tmax_cid4, soma_tmin_cid4, cont]
+                aux = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+        except IndexError:
+            for j in range(13):
+                    if j == 12:
+                        aux[j] = aux[j] + 1
+                    else:
+                        aux[j] = round(aux[j] + (float(data[i][j+3])),4)
+            pass
+    
+    final = list()
+    aux2 = list()
+
+    print(len(soma_tudo))
+    print(len(lista_index))
+
+    arq = open(r"E:\IC\imad_1_2.csv", "w")
+   
+    a = 0
+    for i in range(len(data)):
+        try:
+            if lista_index[a] == i:
+                buff = ''
+                buff = buff + data[i][0] + "," + data[i][1] + "," + data[i][2]
+                b = 3
+                for j in range(12):
+                    buff = buff + "," + str(round(soma_tudo[a][j]/soma_tudo[a][12],4)) + "," + data[i][b]
+                    b += 1
+                arq.write(buff + "\n")
+
+                a += 1
+            else:
+                buff = ''
+                buff = buff + data[i][0] + "," + data[i][1] + "," + data[i][2]
+                b = 3
+                for j in range(12):
+                    buff = buff + "," + str(round(soma_tudo[a][j]/soma_tudo[a][12],4)) + "," + data[i][b]
+                    
+                    b += 1
+                arq.write(buff + "\n")
+        except IndexError:
+            pass
+        
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
 neighorA = r'E:\IC\Dados\TriangulacaoBH\FLORESTAL.csv'
@@ -405,13 +466,16 @@ d3 = haversine_calc(coord_target, coord_neighorC)
 
 
 """  ->Colocando a distancias entre cada cidade em uma tupla, e a altitude de cada uma em outra tupla<-  """
-d = (d1, d2, d3) #Vetor com as distancias (Km) entre a cidade alvo e as 3 cidades vizinhas
+d = (d1, d2, d3) #Tupla com as distancias (Km) entre a cidade alvo e as 3 cidades vizinhas
 h = (float(coord_target[3]), float(coord_neighorA[3]), float(coord_neighorB[3]), float(coord_neighorC[3])) #Alvo, vizinhaA, vizinhaB, vizinhaC
 
-
-"""  ->Normalizando dados<-  """
-"""
 comon_data = dados_comum(targetData, neighorAData, neighorBData, neighorCData)
-datan = normaliza_dados(comon_data)
-"""
-t1,t2,t3,t4 = divisor_dados(targetData, "tri")
+"""  ->Normalizando dados<-  """
+
+
+#datan = normaliza_dados(comon_data)
+
+
+t1,t2,t3,t4 = divisor_dados(comon_data, "tri")
+
+iMad_tri_v2(t1)

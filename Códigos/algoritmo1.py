@@ -1,17 +1,17 @@
 import csv, os, math
 from haversine import haversine, Unit
+os.system('cls') # *Limpando o terminal 
 
-os.system('cls') # Limpando o terminal
 
-def get_data(diretorio): #Função para a aquisição e tratamento dos dados
+def get_data(diretorio): # !função para a aquisição e tratamento dos dados
     aux = list()
     with open(diretorio) as arq:
         reader = csv.reader(arq)
         for line in reader:
-            aux.append(line) #Cada linha do arquivo é uma lista, então se colocarmos essa lista em outra lista, teremos uma matriz, nesse caso a matriz se chama aux
+            aux.append(line) # ? Cada linha do arquivo é uma lista, então se colocarmos essa lista em outra lista, teremos uma matriz, nesse caso a matriz se chama aux
     
-    del aux[len(aux)-1]  #Remove a ultima linha em branco do arquivo, da pra fazer isso manualmente, mas caso o usuario trabalhe com inumeros arquivos, remover a ultima linha de cada arquivo pode ser um trabalho massante 
-    del aux[0:11]        #Remove o cabeçalho do arquivo .csv
+    del aux[len(aux)-1]      # ? Remove a ultima linha em branco do arquivo, da pra fazer isso manualmente, mas caso o usuario trabalhe com inumeros arquivos, remover a ultima linha de cada arquivo pode ser um trabalho massante 
+    del aux[0:11]            # ? Remove o cabeçalho do arquivo .csv
     
     for i in range(len(aux)):   
         #Removendo os caracteres desenecessários
@@ -20,17 +20,16 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
         aux[i] = str(aux[i]).strip("'")
         aux[i] = str(aux[i]).split(';')
 
-        del aux[i][9] #Remove a ultima coluna, pois ela fica vazia, ('')
+        del aux[i][9]        # ? Remove a ultima coluna, pois ela fica vazia, ('')
    
-        #Remove as outras colunas, deixando somente a de data, precipitação, temperatura max e temperatura min
-
+        # ? Remove as outras colunas, deixando somente a de data, precipitação, temperatura max e temperatura min
         del aux[i][1:3]
         del aux[i][3]
         del aux[i][4:6]
 
-    real = list() #Lista/Matriz final
+    real = list()            # *Lista/Matriz final
 
-    #Removendo todas as linhas que possuem o valor null
+    # ? Removendo todas as linhas que possuem o valor null
     for i in range(len(aux)):
         condicao = 0
         for j in range(1,4):
@@ -40,8 +39,8 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
         if condicao == 0:
             real.append(aux[i])
 
-    
-    for i in range(len(real)): #Separando o dia, mes e ano da string
+    # ? Separando o dia, mes e ano da string
+    for i in range(len(real)): 
         aux.clear()
         for j in range(4):
             aux.append(real[i][j])
@@ -53,7 +52,7 @@ def get_data(diretorio): #Função para a aquisição e tratamento dos dados
         real[i].insert(2, int(data[2]))
         del real[i][3]
 
-    return real #Retorna a lista com os dados tratados, onde na lista em cada linha temos: [ano, mes, dia, precipitação, temperatura max, temperatura min]
+    return real # ! Retorna a lista com os dados tratados, onde na lista em cada linha temos: [ano, mes, dia, precipitação, temperatura max, temperatura min]
 
 def converte_coord(dado):
     dado = list(math.modf(dado))
@@ -69,14 +68,14 @@ def converte_coord(dado):
 
     return str(grau) + "° " + str(minuto) + "' " + str(segundos) + '" '
 
-def get_coordinates(diretorio): #Função para obter as coordenadas de cada cidade
+def get_coordinates(diretorio): # ? Função para obter as coordenadas de cada cidade
     aux = list()
     with open(diretorio) as arq:
         reader = csv.reader(arq)
         for i in reader:
             aux.append(i)
         
-    #Tratamento de dados
+    # ? Tratamento de dados
     del aux[10:]
 
     estacao = str(aux[0]).split(':')
@@ -105,7 +104,7 @@ def get_coordinates(diretorio): #Função para obter as coordenadas de cada cida
     aux.append(altitude)
 
  
-    return aux #Retorna um 'vetor' com os dados: [nome da estação, latitude, longitude, altitude]
+    return aux # ! Retorna um 'vetor' com os dados: [nome da estação, latitude, longitude, altitude]
 
 def normaliza_dados(lista): #Função que retorna a matriz com os dados normalizados
     max_min = list()
@@ -296,89 +295,8 @@ def divisor_dados(data, tipo):
 
         return [jan, fev, mar, abr, mai, jun, jul, ago, sete, outb, nov, dez] # exemp.: teste[mes][linha de cada mes]
 
-def iMAD_tri(data):
-   
-    aux_m = list() #Lista auxiliar com a "indicação" de quais meses são 
-    aux_m.append(data[0][1]) 
-    sp = [0,0,0]      #Soma dos dados de precipitação       (Como é trimestre, cada posição dessa lista é referente a um mês)
-    stmax = [0,0,0]   #Soma dos dados de temperatura máxima   ''  
-    stmin = [0,0,0]   #Soma dos dados de temperatura mínima   ''
-    cont = [0,0,0]    #Contador                               ''
-    for i in range(len(data)):         
-        if aux_m.count(data[i][1]) == 0:     #Adicionando os meses do trimestre na lista
-            aux_m.append(data[i][1])
-    
-    """  -> Calculando a média mensal de cada indice <-  """
-    for i in range(len(data)):               
-        if data[i][1] == aux_m[0]:
-            sp[0] = sp[0] + float(data[i][3])
-            stmax[0] = stmax[0] + float(data[i][4])
-            stmin[0] = stmin[0] + float(data[i][5])
-            cont[0] = cont[0] + 1
-        elif data[i][1] == aux_m[1]:
-            sp[1] = sp[1] + float(data[i][3])
-            stmax[1] = stmax[1] + float(data[i][4])
-            stmin[1] = stmin[1] + float(data[i][5])
-            cont[1] = cont[1] + 1
-        elif data[i][1] == aux_m[2]:
-            sp[2] = sp[2] + float(data[i][3])
-            stmax[2] = stmax[2] + float(data[i][4])
-            stmin[2] = stmin[2] + float(data[i][5])
-            cont[2] = cont[2] + 1
-    
-    aux = list()
-    imad = list()
-    arq = open("imad_1.csv", "w")
-    for i in range(len(data)):
-        aux.clear()
-        if data[i][1] == aux_m[0]:
-            aux.append(data[i][0])
-            aux.append(data[i][1])
-            aux.append(data[i][2])
-            aux.append(round(sp[0]/cont[0],4))
-            aux.append(float(data[i][3]))
-            aux.append(round(stmax[0]/cont[0],4))
-            aux.append(float(data[i][4]))
-            aux.append(round(stmin[0]/cont[0],4))
-            aux.append(float(data[i][5]))
-            #imad.append(aux)
-        elif data[i][1] == aux_m[1]:
-            aux.append(data[i][0])
-            aux.append(data[i][1])
-            aux.append(data[i][2])
-            aux.append(round(sp[1]/cont[1],4))
-            aux.append(float(data[i][3]))
-            aux.append(round(stmax[1]/cont[1],4))
-            aux.append(float(data[i][4]))
-            aux.append(round(stmin[1]/cont[1],4))
-            aux.append(float(data[i][5]))
-            #imad.append(aux)
-        elif data[i][1] == aux_m[2]:
-            aux.append(data[i][0])
-            aux.append(data[i][1])
-            aux.append(data[i][2])
-            aux.append(round(sp[2]/cont[2],4))
-            aux.append(float(data[i][3]))
-            aux.append(round(stmax[2]/cont[2],4))
-            aux.append(float(data[i][4]))
-            aux.append(round(stmin[2]/cont[2],4))
-            aux.append(float(data[i][5]))
-        
 
-        """ -> provisorio <-  """
-        buff = ''
-        for i in range(8):
-            buff = buff + str(aux[i]) + " "
-        buff = buff.split()
-
-        imad.append(buff)
-        arq.write(str(aux))
-        arq.write('\n')
-    arq.close()
-    
-    return imad  #Retorna uma matrix onde [ano, mes, dia, media_mensal_preci, precipitação, media_mensal_tmax, tmax, media_mensal_tmin]
-
-def iMad_tri_v2(data):
+def iMad_tri(data):
     #soma precipitação cid1, stmax cid1, stmin cid1, spcid2, stmaxcid2, stmincid3 ... cont
     aux = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     soma_tudo = list()
@@ -405,15 +323,9 @@ def iMad_tri_v2(data):
                     else:
                         aux[j] = round(aux[j] + (float(data[i][j+3])),4)
             pass
-    
-    final = list()
-    aux2 = list()
-
-    print(len(soma_tudo))
-    print(len(lista_index))
 
     arq = open(r"E:\IC\imad_1_2.csv", "w")
-   
+    final = list()
     a = 0
     for i in range(len(data)):
         try:
@@ -425,6 +337,9 @@ def iMad_tri_v2(data):
                     buff = buff + "," + str(round(soma_tudo[a][j]/soma_tudo[a][12],4)) + "," + data[i][b]
                     b += 1
                 arq.write(buff + "\n")
+                buff = str(buff).strip()
+                buff = buff.split(",")
+                final.append(buff)
 
                 a += 1
             else:
@@ -436,8 +351,45 @@ def iMad_tri_v2(data):
                     
                     b += 1
                 arq.write(buff + "\n")
+                buff = str(buff).strip()
+                buff = buff.split(",")
+                final.append(buff)
         except IndexError:
             pass
+    
+    return final
+   
+def idw(data, foco, distancia): # Todo: 1 - Precipitação, 2 - Temperatura Máxima, 3 - Temperatura Miníma
+    if foco == 1:
+        ind = 6
+    elif foco == 2:
+        ind = 7
+    elif foco == 3:
+        ind = 8
+
+    aux = list()
+    resultado = list()
+    for i in range(len(data)):
+        cont = 0
+        for j in range(ind,15,3):
+            soma = (float(data[i][j])/distancia[cont])
+            cont += 1
+        
+        calc_idw = round(soma / (1/distancia[0] + 1/distancia[1] + 1/distancia[2]),4)
+        aux.clear()
+        aux.append(data[i][0])
+        aux.append(data[i][1])
+        aux.append(data[i][2])
+        aux.append(calc_idw)
+        buff = ""
+        for i in range(len(aux)):
+            buff = buff + str(aux[i]) + " "
+        buff = buff.strip()
+        buff = buff.split(" ")
+        resultado.append(buff)
+        
+    return resultado
+    
         
 
 target = r'E:\IC\Dados\TriangulacaoBH\BELOHORIZONTE.csv'
@@ -478,4 +430,8 @@ comon_data = dados_comum(targetData, neighorAData, neighorBData, neighorCData)
 
 t1,t2,t3,t4 = divisor_dados(comon_data, "tri")
 
-iMad_tri_v2(t1)
+teste = iMad_tri(t1)
+
+vet_idw =  idw(comon_data, 1, d)
+for i in vet_idw:
+    print(i)

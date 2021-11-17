@@ -1,4 +1,5 @@
 import csv, os, math
+from win10toast import ToastNotifier
 from haversine import haversine, Unit
 os.system('cls') # *Limpando o terminal 
 
@@ -435,3 +436,9 @@ teste = iMad_tri(t1)
 vet_idw =  idw(comon_data, 1, d)
 for i in vet_idw:
     print(i)
+
+
+# ! Notificar que a execução do programa terminou
+toast = ToastNotifier()
+toast.show_toast("Algoritmo 1", "A execução do algoritmo1.py terminou", duration=30)
+

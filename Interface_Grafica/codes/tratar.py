@@ -1,13 +1,21 @@
-import threading
-import csv
-from win10toast import ToastNotifier
-class Data_trat:
-    def __init__(self, alvo, vizinhaA, vizinhaB, vizinhaC, donwload):
+import csv, os
+import subprocess
+import _thread
+class Tratamento:
+    global alvo
+    global vizinhaA
+    global vizinhaB
+    global vizinhaC
+    global download
+    alvo = vizinhaA = vizinhaB = vizinhaC = download = ''
+    def __init__(self):
         self.alvo = alvo
         self.vizinhaA = vizinhaA
         self.vizinhaB = vizinhaB
         self.vizinhaC = vizinhaC
-        self.download = donwload
+        self.download = download
+    # def __init__(self, alvo, vizinhaA, vizinhaB, vizinhaC, download):
+    
     
     def get_data_trada(self): #! Funçao para retornar os dados tratados
         diretorio = [self.alvo, self.vizinhaA, self.vizinhaB, self.vizinhaC]
@@ -79,10 +87,92 @@ class Data_trat:
                 new_arq.write(str(i)+"\n")
             new_arq.close()
             cont += 1
+        self.dadosc()
+        
+        
+
+    def dadosc(self):
+       subprocess.call(r'E:\IC\Interface_Grafica\codes\dadosc.py', shell=True)
+       
+    def retorna_arq(self, op):
+        if op == 'Cidade alvo':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
+        elif op == 'Vizinha A':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
+        elif op == 'Vizinha B':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
+        elif op == 'Vizinha C':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+        elif op == 'Dados comum':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\dadoscomum.csv'
+        
+
+        
+        lista = list()
+        arq = open(di) 
+        for i in arq:
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            if op == 'Dados comum':
+                i = i.split(';')
+                del i[len(i)-1]
+            else:
+                i = i.split(',')  
+            lista.append(i)
+        arq.close()
+        return lista
     
+    def get_range(self, op):
+        controle = 0
+        if op == 'Cidade alvo':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
+        elif op == 'Vizinha A':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
+        elif op == 'Vizinha B':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
+        elif op == 'Vizinha C':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+        elif op == 'Dados comum':
+            di = r'E:\IC\Interface_Grafica\Dados_verificacao\dadoscomum.csv'
+            controle = 1
+            
+        arq = open(di)
+        aux = list()
+    
+        for i in arq:
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            if controle == 1:
+                i = i.split(';')
+                del i[len(i)-1]
+            else:
+                i = i.split(',')
+            aux.append(int(i[0]))
+        arq.close()
+        anos = list()
+        buff = aux[0]
+    
+        anos.append(buff)
         
-        print("acabou")
+        for i in range(1,len(aux)): 
+            try:
+                if aux[i-1] != aux[i]:
+                    buff = aux[i]
+                    anos.append(buff)
+            except IndexError:
+                pass
+        return anos
 
-        
-        
-
+    def get_qtd(self):
+        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\buff.txt')
+        a = arq.readline()
+        a = a.split()
+        ut = int(a[0])
+        Tar = int(a[1])
+        vA = int(a[2])
+        vB = int(a[3])
+        vC = int(a[4])
+        arq.close()
+        return ut, Tar,vA, vB, vC

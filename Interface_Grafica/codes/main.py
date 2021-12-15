@@ -3,6 +3,7 @@ from tkinter import filedialog as dlg
 from tkinter import messagebox as msg
 from tkinter import ttk
 from tratar import Tratamento
+from ml import Treinamento
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) 
 import datetime as dt
@@ -82,14 +83,193 @@ class Selecionar_Arquivos_win(Toplevel):
 
 
 class Aprendizado_Marquina(Toplevel):
+    def teste(self):
+        print('seila')
+
+    def gerar_preview(self):
+        prev = Treinamento()
+        
+        if self.data_s.get() == 'Cidade alvo':
+            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
+        elif self.data_s.get() == 'Vizinha A':
+            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
+        elif self.data_s.get() == 'Vizinha B':
+            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
+        elif self.data_s.get() == 'Vizinha C':
+            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+
+        indicador = self.ind_s.get()
+        divisao = int(self.por_trei.get())
+        criterio = self.criterion_v.get()
+        splitter = self.splitter_v.get()
+        maxd = int(self.maxd_v.get())             #* Max_depth
+        minsams = float(self.minsam_s_v.get())    #* Min_samples_split
+        minsaml = int(self.minsam_l_v.get())    #* Min_samples_leaf
+        minwei = float(self.minweifra_l_v.get())
+        maxfe = self.maxfeat_v.get()
+        maxleaf = int(self.maxleaf_n.get())
+        minim = float(self.minimp_dec.get())
+        ccp = self.ccp_alp_v.get()
+        n_tes = int(self.num_teste.get())
+
+
+        if indicador == 'Precipitação':
+            indicador = 3
+        elif indicador == 'Temperatura máxima':
+            indicador = 4
+        elif indicador == 'Temperatura mínima':
+            indicador = 5
+
+
+        pts, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x = prev.ArvoreDecisao(cidade, indicador, divisao, criterio, splitter, maxd, minsaml, maxfe, maxleaf, n_tes)
+        
+        Label(self, text='Pontuação (0-100): '+ str(pts) +'pts', font='Arial 12 bold', fg='white', bg=fundo).place(x=680, y=70)
+        media_ea = round(media_ea, 4)
+        Label(self, text='Média Erro absoluto: '+ str(media_ea), font='Arial 12 bold', fg='white', bg=fundo).place(x=680, y=100)
+        media_er = round(media_er, 4)
+        Label(self, text='Média Erro relativo: '+ str(media_er), font='Arial 12 bold', fg='white', bg=fundo).place(x=680, y=130)
+
+        Label(self, text='Maior erro absoluto: ' + str(round(maior_ea,4)), font='Arial 12 bold', fg='white', bg=fundo).place(x=680, y=160)
+        Label(self, text="Valor exato do maior EA: " + str(round(exat_maior,4)),font='Arial 12 bold', fg='white', bg=fundo).place(x=940, y=160)
+        Label(self, text="Predict do maior EA: " + str(round(pre_maior, 4)), font='Arial 12 bold', fg='white', bg=fundo).place(x=1200, y=160)
+
+        Label(self, text='Menor erro absoluto: ' + str(round(menor_ea,4)), font='Arial 12 bold', fg='white', bg=fundo).place(x=680, y=190)
+        Label(self, text="Valor exato do menor EA: " + str(round(exat_menor,4)),font='Arial 12 bold', fg='white', bg=fundo).place(x=940, y=190)
+        Label(self, text="Predict do menor EA: " + str(round(pre_menor, 4)), font='Arial 12 bold', fg='white', bg=fundo).place(x=1200, y=190)
+
+        figura = Figure(figsize=(12,7.3), dpi=100)
+        plot_r = figura.add_subplot(111)
+        plot_r.plot(eixo_x, eixo_y_exato,label='Exato', color='green')
+        plot_r.plot(eixo_x, eixo_y_predict, label='Predict', color='red')
+        plot_r.legend()
+        plot_r.grid(True)
+        plot_r.set_ylabel("Temperatura(°C)")
+        plot_r.set_xlabel("Comparações")
+
+        canvas = FigureCanvasTkAgg(figura, master=self)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+        canvas.get_tk_widget().place(x=680, y=240)
+
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.place(x=1150, y=10)
+        toolbar.update()
+    def gera_param(self):
+        opcao = self.ml_selected.get()
+        if opcao == 'Decision Trees':
+            self.lbf_p = LabelFrame(self, text='Parâmetros', width=600, height=395, font='Arial 12 bold', fg ='white', bg=fundo).place(x=20, y=100)
+
+            self.criterion_v = StringVar()
+            lista_cri = ["squared_error", "friedman_mse", "absolute_error", "poisson"]
+            self.criterion_v.set("squared_error")
+            Label(self, text='Criterion:', font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=120)
+            ttk.Combobox(self, values=lista_cri, textvariable=self.criterion_v, width=25, font='Arial 12', justify=CENTER, state='readonly').place(x=50, y=145)
+
+            self.splitter_v = StringVar()
+            lista_spl = ["best", "random"]
+            self.splitter_v.set("best")
+            Label(self, text='Splitter:', font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=120)
+            ttk.Combobox(self, values=lista_spl, textvariable=self.splitter_v, width=25, font='Arial 12', justify=CENTER, state='readonly').place(x=340, y=145)
+            
+
+            self.maxd_v = StringVar()
+            self.maxd_v.set("10")
+            Label(self, text="Max_deph (int):", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=180)
+            self.ent_maxd = Entry(self, textvariable=self.maxd_v, width=27, font='Arial 12', justify=CENTER).place(x=50, y=205)
+
+            self.minsam_s_v = IntVar()
+            self.minsam_s_v.set(2)
+            Label(self, text="Min_samples_split (int/float (.)):", font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=180)
+            self.minsam_s = Entry(self, textvariable=self.minsam_s_v, width=27, font='Arial 12', justify=CENTER).place(x=340, y=205)
+            
+            self.minsam_l_v = IntVar()
+            self.minsam_l_v.set(50)
+            Label(self, text="Min_samples_leaf (int/float (.)):", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=240)
+            self.ent_minsam_l = Entry(self, textvariable=self.minsam_l_v, width=27, font='Arial 12', justify=CENTER).place(x=50, y=265)
+
+            self.minweifra_l_v = StringVar()
+            self.minweifra_l_v.set("0.0")
+            Label(self, text="Min_weight_fraction_leaf (float (.)):", font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=240)
+            self.ent_minweifra_l = Entry(self, textvariable=self.minweifra_l_v, width=27, font='Arial 12', justify=CENTER).place(x=340, y=265)
+            
+            self.maxfeat_v = StringVar()
+            self.maxfeat_v.set("auto")
+            Label(self, text="Max_features :", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=300)
+            Label(self, text="Valores para Max_features:", font='Arial 12 bold', fg=fun_alt, bg=fundo).place(x=340, y=300)
+            Label(self, text="int / float / 'auto' / 'sqrt' / 'log2'", font='Arial 12 bold', fg=fun_alt, bg=fundo).place(x=340, y=325)
+            self.ent_maxfeat_v = Entry(self, textvariable=self.maxfeat_v, width=27, font='Arial 12', justify=CENTER).place(x=50, y=325)
+
+            self.maxleaf_n = StringVar()
+            self.maxleaf_n.set("10")
+            Label(self, text="Max_leaf_nodes (float (.))", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=360)
+            self.ent_maxleaf_n = Entry(self, textvariable=self.maxleaf_n, width=27, font='Arial 12', justify=CENTER).place(x=50, y=385)
+
+            self.minimp_dec = StringVar()
+            self.minimp_dec.set("0.0")
+            Label(self, text="Min_impurity_decrease (float (.))", font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=360)
+            self.ent_minimp_dec = Entry(self, textvariable=self.minimp_dec, width=27, font='Arial 12', justify=CENTER).place(x=340, y=385)
+
+            self.ccp_alp_v = StringVar()
+            self.ccp_alp_v.set("0.0")
+            Label(self, text="Ccp_alpha (value>0.0 float):", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=420)
+            self.ent_ccp_alp = Entry(self, textvariable=self.ccp_alp_v, width=27, font='Arial 12', justify=CENTER).place(x=50, y=445)
+
+        
+            self.num_teste = IntVar()
+            self.num_teste.set(5)
+            Label(self, text="Número de testes (int):", font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=420)
+            self.ent_num_teste = Entry(self, textvariable=self.num_teste, width=27, font='Arial 12', justify=CENTER).place(x=340, y=445)
+
+
+            self.lbf_d = LabelFrame(self, text='Dados', width=600, height=170, font='Arial 12 bold', fg ='white', bg=fundo).place(x=20, y=500)
+
+            self.data_s = StringVar()
+            self.data_s.set('Cidade alvo')
+            lista_dt = ['Cidade alvo', 'Vizinha A', 'Vizinha B', 'Vizinha C']
+            Label(self, text="Dados para treinamento:", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=520)
+            self.combo_c = ttk.Combobox(self, values=lista_dt, textvariable=self.data_s, width=25, font='Arial 12', justify=CENTER, state='readonly').place(x=50, y=545)
+
+            self.ind_s = StringVar()
+            self.ind_s.set('Temperatura máxima')
+            lista_ind = ['Precipitação', 'Temperatura máxima', 'Temperatura mínima']
+            Label(self, text='Indicador:', font='Arial 12 bold', fg='white', bg=fundo).place(x=340, y=520)
+            ttk.Combobox(self, values=lista_ind, textvariable=self.ind_s, width=25, font='Arial 12', justify=CENTER, state='readonly').place(x=340, y=545)
+
+            self.por_trei = IntVar()
+            self.por_trei.set(70)
+            Label(self, text="Porção para treinamento:", font='Arial 12 bold', fg='white', bg=fundo).place(x=50, y=580)
+            Scale(self, variable=self.por_trei, orient=HORIZONTAL, length=240).place(x=50, y=605)
+
+           
+            Button(self, text='Preview', font='Arial 11 bold', fg='white', bg=fun_b, width=59, command=self.gerar_preview).place(x=50, y=685)
+
+
     def __init__(self, master=None):
 
-
+        
 
         Toplevel.__init__(self, master=master)
         self.title('Aprendizado de máquina')
-        self.geometry("800x800")
+        self.state("zoomed")
         self.configure(background=fundo)
+
+        Label(self, text='APRENDIZADO DE MÁQUINA', font='Arial 14 bold', fg='white', bg=fundo).place(x=200, y=20)
+
+        self.ml_selected = StringVar()
+        self.ml_selected.set('Decision Trees')
+        lista_ml = ['Decision Trees', 'Neural network']
+        ttk.Combobox(self, values=lista_ml, textvariable=self.ml_selected, width=28, font='Arial 12', justify=CENTER, state='readonly').place(x=20, y=60)
+        Button(self, text='Escolher Machine Learning', font='Arial 11 bold', fg='white', bg=fun_ap, width=30, command=self.gera_param).place(x=340, y=59)
+
+
+        self.laf_res = LabelFrame(self, text='Preview dos resultados', width=1250, height=950, font='Arial 12 bold', fg='white', bg=fundo).place(x=650, y=50)
+
+
+
+        
+
+        
+        
 class Principal(Frame):
     def open_sa(self): #* sa = Selecionar Arquivos
         window = Selecionar_Arquivos_win()

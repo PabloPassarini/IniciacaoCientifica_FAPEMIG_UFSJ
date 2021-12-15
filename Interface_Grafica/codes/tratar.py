@@ -176,3 +176,5 @@ class Tratamento:
         vC = int(a[4])
         arq.close()
         return ut, Tar,vA, vB, vC
+    
+   

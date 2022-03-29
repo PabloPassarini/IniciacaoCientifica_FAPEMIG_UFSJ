@@ -1,0 +1,991 @@
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:36:53
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:38:09
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: sigmoid
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.117709 || Erro Absoluto: 0.063866
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:38:17
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: poly
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.102449 || Erro Absoluto: 0.056397
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:40:35
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.08284 || Erro Absoluto: 0.045048
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:40:53
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: auto
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.08284 || Erro Absoluto: 0.045048
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:41:01
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: auto
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: False
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.08284 || Erro Absoluto: 0.045048
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:41:10
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: auto
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: False
+  -> cache_size: 200.0
+  -> verbose: True
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.08284 || Erro Absoluto: 0.045048
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-08 14:41:16
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: auto
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: True
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.08284 || Erro Absoluto: 0.045048
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-09 13:36:21
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-16 14:20:49
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-18 11:01:28
+Porção para treinamento: 70%
+Indicador climático: Precipitação
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.427988 || Erro Absoluto: 0.088551
+media do Erro absoluto: 0.08855059017514406 || média do Erro relativo: 0.4279884460841411
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-02-18 11:01:38
+Porção para treinamento: 70%
+Indicador climático: Precipitação
+
+Parâmetros usados:
+  -> kernel: linear
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.441364 || Erro Absoluto: 0.091244
+media do Erro absoluto: 0.09124381969094632 || média do Erro relativo: 0.4413635216802697
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-18 11:34:49
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 6 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 7 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 8 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 9 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 10 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 11 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 12 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 13 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 14 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 15 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 16 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 17 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 18 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 19 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 20 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 21 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 22 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 23 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 24 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 25 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 26 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 27 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 28 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 29 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 30 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917058 || média do Erro relativo: 0.08509829131696516
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 09:28:36
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 09:56:37
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:08:59
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:46:51
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:47:15
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.094866 || Erro Absoluto: 0.049453
+Teste n° 2 -> Erro Relativo: 0.094866 || Erro Absoluto: 0.049453
+Teste n° 3 -> Erro Relativo: 0.094866 || Erro Absoluto: 0.049453
+Teste n° 4 -> Erro Relativo: 0.094866 || Erro Absoluto: 0.049453
+Teste n° 5 -> Erro Relativo: 0.094866 || Erro Absoluto: 0.049453
+media do Erro absoluto: 0.0494533271753865 || média do Erro relativo: 0.09486567052789603
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:47:40
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088746 || Erro Absoluto: 0.049885
+Teste n° 2 -> Erro Relativo: 0.088746 || Erro Absoluto: 0.049885
+Teste n° 3 -> Erro Relativo: 0.088746 || Erro Absoluto: 0.049885
+Teste n° 4 -> Erro Relativo: 0.088746 || Erro Absoluto: 0.049885
+Teste n° 5 -> Erro Relativo: 0.088746 || Erro Absoluto: 0.049885
+media do Erro absoluto: 0.049884870763532124 || média do Erro relativo: 0.08874588535680532
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:47:56
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.092272 || Erro Absoluto: 0.048303
+Teste n° 2 -> Erro Relativo: 0.092272 || Erro Absoluto: 0.048303
+Teste n° 3 -> Erro Relativo: 0.092272 || Erro Absoluto: 0.048303
+Teste n° 4 -> Erro Relativo: 0.092272 || Erro Absoluto: 0.048303
+Teste n° 5 -> Erro Relativo: 0.092272 || Erro Absoluto: 0.048303
+media do Erro absoluto: 0.048302577968268076 || média do Erro relativo: 0.09227232035968318
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 10:54:59
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:31:15
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:32:06
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.098381 || Erro Absoluto: 0.048259
+Teste n° 2 -> Erro Relativo: 0.098381 || Erro Absoluto: 0.048259
+Teste n° 3 -> Erro Relativo: 0.098381 || Erro Absoluto: 0.048259
+Teste n° 4 -> Erro Relativo: 0.098381 || Erro Absoluto: 0.048259
+Teste n° 5 -> Erro Relativo: 0.098381 || Erro Absoluto: 0.048259
+media do Erro absoluto: 0.04825876542048891 || média do Erro relativo: 0.09838144616832872
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:32:18
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.107001 || Erro Absoluto: 0.05634
+Teste n° 2 -> Erro Relativo: 0.107001 || Erro Absoluto: 0.05634
+Teste n° 3 -> Erro Relativo: 0.107001 || Erro Absoluto: 0.05634
+Teste n° 4 -> Erro Relativo: 0.107001 || Erro Absoluto: 0.05634
+Teste n° 5 -> Erro Relativo: 0.107001 || Erro Absoluto: 0.05634
+media do Erro absoluto: 0.056340005485146026 || média do Erro relativo: 0.10700132559102322
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:32:27
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.105918 || Erro Absoluto: 0.053032
+Teste n° 2 -> Erro Relativo: 0.105918 || Erro Absoluto: 0.053032
+Teste n° 3 -> Erro Relativo: 0.105918 || Erro Absoluto: 0.053032
+Teste n° 4 -> Erro Relativo: 0.105918 || Erro Absoluto: 0.053032
+Teste n° 5 -> Erro Relativo: 0.105918 || Erro Absoluto: 0.053032
+media do Erro absoluto: 0.05303215183852363 || média do Erro relativo: 0.10591841465594135
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:37:29
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:37:52
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.122572 || Erro Absoluto: 0.060118
+Teste n° 2 -> Erro Relativo: 0.122572 || Erro Absoluto: 0.060118
+Teste n° 3 -> Erro Relativo: 0.122572 || Erro Absoluto: 0.060118
+Teste n° 4 -> Erro Relativo: 0.122572 || Erro Absoluto: 0.060118
+Teste n° 5 -> Erro Relativo: 0.122572 || Erro Absoluto: 0.060118
+media do Erro absoluto: 0.06011761333596203 || média do Erro relativo: 0.1225722496792268
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:38:01
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.115154 || Erro Absoluto: 0.058306
+Teste n° 2 -> Erro Relativo: 0.115154 || Erro Absoluto: 0.058306
+Teste n° 3 -> Erro Relativo: 0.115154 || Erro Absoluto: 0.058306
+Teste n° 4 -> Erro Relativo: 0.115154 || Erro Absoluto: 0.058306
+Teste n° 5 -> Erro Relativo: 0.115154 || Erro Absoluto: 0.058306
+media do Erro absoluto: 0.058306057688103693 || média do Erro relativo: 0.11515431517551097
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:38:15
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.111262 || Erro Absoluto: 0.052727
+Teste n° 2 -> Erro Relativo: 0.111262 || Erro Absoluto: 0.052727
+Teste n° 3 -> Erro Relativo: 0.111262 || Erro Absoluto: 0.052727
+Teste n° 4 -> Erro Relativo: 0.111262 || Erro Absoluto: 0.052727
+Teste n° 5 -> Erro Relativo: 0.111262 || Erro Absoluto: 0.052727
+media do Erro absoluto: 0.052727017139834645 || média do Erro relativo: 0.11126233472690876
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:45:52
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 2 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 3 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 4 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+Teste n° 5 -> Erro Relativo: 0.085098 || Erro Absoluto: 0.045357
+media do Erro absoluto: 0.04535654534917057 || média do Erro relativo: 0.0850982913169652
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:46:15
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.120058 || Erro Absoluto: 0.059225
+Teste n° 2 -> Erro Relativo: 0.120058 || Erro Absoluto: 0.059225
+Teste n° 3 -> Erro Relativo: 0.120058 || Erro Absoluto: 0.059225
+Teste n° 4 -> Erro Relativo: 0.120058 || Erro Absoluto: 0.059225
+Teste n° 5 -> Erro Relativo: 0.120058 || Erro Absoluto: 0.059225
+media do Erro absoluto: 0.059224656619068686 || média do Erro relativo: 0.1200584300997454
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:46:34
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.100889 || Erro Absoluto: 0.048034
+Teste n° 2 -> Erro Relativo: 0.100889 || Erro Absoluto: 0.048034
+Teste n° 3 -> Erro Relativo: 0.100889 || Erro Absoluto: 0.048034
+Teste n° 4 -> Erro Relativo: 0.100889 || Erro Absoluto: 0.048034
+Teste n° 5 -> Erro Relativo: 0.100889 || Erro Absoluto: 0.048034
+media do Erro absoluto: 0.048034450938826766 || média do Erro relativo: 0.10088884579766402
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Support Vector Machine ----
+
+Horário dos teste: 2022-03-24 13:46:48
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> kernel: rbf
+  -> degree: 3
+  -> gamma: scale
+  -> coef0: 0.0
+  -> tol: 0.001
+  -> C: 1.0
+  -> epsilon: 0.1
+  -> shrinking: True
+  -> cache_size: 200.0
+  -> verbose: False
+  -> max_iter: -1
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.092827 || Erro Absoluto: 0.048424
+Teste n° 2 -> Erro Relativo: 0.092827 || Erro Absoluto: 0.048424
+Teste n° 3 -> Erro Relativo: 0.092827 || Erro Absoluto: 0.048424
+Teste n° 4 -> Erro Relativo: 0.092827 || Erro Absoluto: 0.048424
+Teste n° 5 -> Erro Relativo: 0.092827 || Erro Absoluto: 0.048424
+media do Erro absoluto: 0.04842423420956506 || média do Erro relativo: 0.09282698807063312
+-------------------------------------------------------------
+

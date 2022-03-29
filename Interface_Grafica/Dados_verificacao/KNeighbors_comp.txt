@@ -1,0 +1,146 @@
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-08 14:41:29
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+Teste n° 2 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+Teste n° 3 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+Teste n° 4 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+Teste n° 5 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-08 14:44:27
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: ball_tree
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-08 14:44:53
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: kd_tree
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-08 14:45:18
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: brute
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-09 13:36:42
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-02-16 14:19:16
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+media do Erro absoluto: 0.05085187822452349 || média do Erro relativo: 0.09613817472781529
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-03-14 18:28:54
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
+media do Erro absoluto: 0.05085187822452349 || média do Erro relativo: 0.09613817472781529
+-------------------------------------------------------------
+

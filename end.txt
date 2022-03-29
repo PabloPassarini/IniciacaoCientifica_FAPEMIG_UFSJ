@@ -1,0 +1,7 @@
+E:/IC/Dados/Teste_Raio/Testes_a/dados/alvo_limpa.txt
+E:/IC/Dados/Teste_Raio/Testes_a/dados/vizinhaA_limpa.txt
+E:/IC/Dados/Teste_Raio/Testes_a/dados/vizinhaB_limpa.txt
+E:/IC/Dados/Teste_Raio/Testes_a/dados/vizinhaC_limpa.txt
+E:/IC/Dados/Teste_Raio/Testes_a/dados/dadoscomum.csv
+E:/IC/Dados/Teste_Raio/Testes_a/dados/buff.txt
+E:/IC/Dados/Teste_Raio/Testes_a/dados/Coordenadas.txt

@@ -1,0 +1,6 @@
+E:/IC/Interface_Grafica/Dados_verificacao/alvo_limpa.txt
+E:/IC/Interface_Grafica/Dados_verificacao/vizinhaA_limpa.txt
+E:/IC/Interface_Grafica/Dados_verificacao/vizinhaB_limpa.txt
+E:/IC/Interface_Grafica/Dados_verificacao/vizinhaC_limpa.txt
+E:/IC/Interface_Grafica/Dados_verificacao/dadoscomum.csv
+E:/IC/Interface_Grafica/Dados_verificacao/buff.txt

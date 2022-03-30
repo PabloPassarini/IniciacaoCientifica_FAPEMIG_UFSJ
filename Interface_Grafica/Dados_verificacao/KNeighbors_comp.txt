@@ -144,3 +144,45 @@ Teste n° 1 -> Erro Relativo: 0.096138 || Erro Absoluto: 0.050852
 media do Erro absoluto: 0.05085187822452349 || média do Erro relativo: 0.09613817472781529
 -------------------------------------------------------------
 
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-03-30 12:02:16
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.177077 || Erro Absoluto: 0.083098
+media do Erro absoluto: 0.08309798415404672 || média do Erro relativo: 0.17707669265965784
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML KNeighbors ----
+
+Horário dos teste: 2022-03-30 12:02:23
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> n_neighbors: 5
+  -> algorithm: auto
+  -> leaf_size: 30
+  -> p: 2
+  -> n_jobs: 5
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.177077 || Erro Absoluto: 0.083098
+media do Erro absoluto: 0.08309798415404672 || média do Erro relativo: 0.17707669265965784
+-------------------------------------------------------------
+

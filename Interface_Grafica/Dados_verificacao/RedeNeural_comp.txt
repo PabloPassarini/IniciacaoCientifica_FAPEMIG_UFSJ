@@ -1990,3 +1990,202 @@ media do Erro absoluto: 0.04326815217932959 || média do Erro relativo: 0.0843295
 Tempo de execução: 1.0871121883392334 s
 -------------------------------------------------------------
 
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-03-30 12:00:28
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.150794 || Erro Absoluto: 0.066373
+
+media do Erro absoluto: 0.06637277453735006 || média do Erro relativo: 0.1507939443328425
+
+Tempo de execução: 0.09388256072998047 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-03-30 12:05:30
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085965 || Erro Absoluto: 0.0431
+
+media do Erro absoluto: 0.0431002295359992 || média do Erro relativo: 0.08596466905210376
+
+Tempo de execução: 0.6166496276855469 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-03-30 12:05:49
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.090249 || Erro Absoluto: 0.045727
+
+media do Erro absoluto: 0.04572658081984953 || média do Erro relativo: 0.09024907263614142
+
+Tempo de execução: 0.5624313354492188 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-03-30 12:05:54
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.085005 || Erro Absoluto: 0.04174
+
+media do Erro absoluto: 0.04174007074997582 || média do Erro relativo: 0.08500537255761278
+
+Tempo de execução: 0.5185928344726562 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-03-30 16:21:16
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.162871 || Erro Absoluto: 0.070423
+Teste n° 2 -> Erro Relativo: 0.156883 || Erro Absoluto: 0.069999
+Teste n° 3 -> Erro Relativo: 0.173025 || Erro Absoluto: 0.07771
+Teste n° 4 -> Erro Relativo: 0.181402 || Erro Absoluto: 0.08003
+Teste n° 5 -> Erro Relativo: 0.159378 || Erro Absoluto: 0.070776
+
+media do Erro absoluto: 0.07378773615301051 || média do Erro relativo: 0.16671192912948357
+
+Tempo de execução: 0.6163268089294434 s
+-------------------------------------------------------------
+

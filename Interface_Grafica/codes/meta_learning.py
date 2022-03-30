@@ -133,7 +133,6 @@ class MetaL:
         #Preparando os dados do aprendiz lv0 para o aprendiz lv1
         mat_p2 = list()
         if janela == 'Sim':        
-            
             for i in range(len(mat_in_p2)):
                 aux = list()
                 valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])

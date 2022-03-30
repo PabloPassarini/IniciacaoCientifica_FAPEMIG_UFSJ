@@ -191,8 +191,8 @@ class Aprendizado_Marquina(Toplevel):
         
 
 
-        cidade = self.get_end(self.data_s.get())
-
+        #cidade = self.get_end(self.data_s.get())
+        cidade = self.data_s.get()
         indicador = self.ind_s.get()
         divisao = int(self.por_trei.get())
         criterio = self.criterion_v.get()

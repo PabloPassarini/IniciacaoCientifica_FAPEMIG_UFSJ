@@ -1,73 +1,154 @@
-import os
-os.system('cls')
+from triangulacao import Triangulaction
+from tratar import Tratamento
+from ml import Treinamento
+from math import floor
+from sklearn import tree
+from sklearn.neural_network import MLPRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR
 
-def retorna_arq(dir):
-    arq = open(dir, 'r')
-    lista = list()
-    tam = 0
-    for i in arq:
-        i = i.strip()
-        i = i.replace("'",'')
-        i = i.replace(" ",'')
-        i = i.split(',')
-        lista.append(i)
-        tam += 1
+class MetaL:
+    def prepara_input(self, indicador, janela):
+        if indicador == 1:
+            foco = 3
+        elif indicador == 2:
+            foco = 4
+        else: 
+            foco = 5
+
+        trat = Tratamento()
+        dt = trat.retorna_arq('Dados comum')
+
+        mat = list()
+        for i in range(len(dt)): #Vai fazer uma matriz com ano mes dia foco
+            aux = list()
+            aux.append(float(dt[i][0]))
+            aux.append(float(dt[i][1]))
+            aux.append(float(dt[i][2]))
+            aux.append(float(dt[i][foco]))
+            mat.append(aux)
+
+        norma = Treinamento()
+        mat_n = norma.normalizar(mat) #Vai normalizar os dados de cada coluna e de cada linha
+        if janela == 'Sim':
+            matriz_t, matriz_r = self.janela_deslizante(mat_n) #Vai fazer as matrizes para o input no formato de janela deslizante
+        else:
+            matriz_t, matriz_r = self.input_comum(mat_n)
+
+        m1_40_t = list()
+        m1_40_r = list()
+        m2_40_t = list() #Para o aprediz lv0 fazer os predicts, que serão um dos inputs do meta
+        m2_40_r = list()
+        m3_20_t = list()
+        m3_20_r = list()
+
+        tamanho = len(matriz_t)
+        t1 = floor(tamanho * 0.4)
+        t2 = t1 * 2
+
+        for i in range(tamanho): #Vai separa as porções de dados
+            if i <= t1:
+                m1_40_t.append(matriz_t[i])
+                m1_40_r.append(matriz_r[i])
+            elif i > t1 and i <=t2:
+                m2_40_t.append(matriz_t[i])
+                m2_40_r.append(matriz_r[i])
+            else:
+                m3_20_t.append(matriz_t[i])
+                m3_20_r.append(matriz_r[i])
+        
+        return m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r
+
+    def janela_deslizante(self, data):
+        matriz = list()
+        resultado = list()
+        buff = list()
+        for i in range(len(data)):
+            buff = list()
+            try:
+                for j in range(5):
+                    buff.append(data[i+j][0])
+                    buff.append(data[i+j][1])
+                    buff.append(data[i+j][2])
+                    buff.append(data[i+j][3])
+                if len(buff) == 20:
+                    matriz.append(buff[:19])
+                    resultado.append(buff[19])
+            except IndexError:
+                pass
+        return matriz, resultado
+
+    def input_comum(self, data):
+        matriz = list()
+        resultado = list()
+        
+        for i in range(len(data)):
+            buff = list()
+            buff.append(data[i][0])
+            buff.append(data[i][1])
+            buff.append(data[i][2])
+            matriz.append(buff)
+
+            resultado.append(data[i][3])
+
+        return matriz, resultado
     
-    arq.close()
-    return lista, tam
+    def base_learn(self, mach, pre, n_test, mat_in_tr, mat_res_tr, mat_in_valid, mat_res_valid, mat_in_p2, mat_res_p2):
+        if pre == 0:
+            if mach == 'Decision Trees':
+                aprendiz_lv0 = tree.DecisionTreeRegressor()
+            elif mach == 'Neural network':
+                aprendiz_lv0 = MLPRegressor()
+            elif mach == 'Nearest Neighbors':
+                aprendiz_lv0 = KNeighborsRegressor()
+            elif mach == 'Support Vector':
+                aprendiz_lv0 = SVR()
 
-alv, t1 = retorna_arq(r'E:/IC/Dados/NOVAS REGIOES/AMPA/dados/alvo_limpa.txt')
-vizA, t2 = retorna_arq(r'E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaA_limpa.txt')
-vizB, t2 = retorna_arq(r'E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaB_limpa.txt')
-vizC, t2 = retorna_arq(r'E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaC_limpa.txt')
+        soma_er_nteste = 0
+        soma_ea_nteste = 0
+        
+        soma_r2 = 0
+        
+        for i in range(n_test):
+            aprendiz_lv0 = aprendiz_lv0.fit(mat_in_tr, mat_res_tr)
+            soma_ea = 0
+            soma_er = 0
 
-print("{} {} {} {}".format(alv[0], vizA[0], vizB[0], vizC[0]))
-comeca = max(alv[0][0], vizA[0][0], vizB[0][0], vizC[0][0])
+            soma_r2 = soma_r2 + aprendiz_lv0.score(mat_in_valid, mat_res_valid)
 
-ind1 = ind2 = ind3 = ind4 = 0
-for i in range(len(alv)):
-    if int(comeca )== int(alv[i][0]):
-        ind1 = i
-        break
-for i in range(len(vizA)):
-    if int(comeca)== int(vizA[i][0]):
-        ind2 = i
-        break
-for i in range(len(vizA)):
-    if int(comeca)== int(vizB[i][0]):
-        ind3 = i
-        break
-for i in range(len(vizA)):
-    if int(comeca)== int(vizC[i][0]):
-        ind4 = i
-        break
-print("{} - {} | {} - {} | {} - {} | {} - {}".format(ind1, alv[ind1], ind2, vizA[ind2], ind3, vizB[ind3], ind4, vizC[ind4]))
-comum = 0
-arq = open(r'E:/IC/Dados/NOVAS REGIOES/AMPA/dados/dadoscomum.txt', 'w')
-for i in range(ind1, len(alv)):
-    
-    ano1 = alv[i][0]
-    mes1 = alv[i][1]
-    dia1 = alv[i][2]
-    for j in range(ind2, len(vizA)):
-        ano2 = vizA[j][0]
-        mes2 = vizA[j][1]
-        dia2 = vizA[j][2]
-        if (ano1 == ano2) and (mes1 == mes2) and (dia1 == dia2):
-            for k in range(ind3, len(vizB)):
-                ano3 = vizB[k][0]
-                mes3 = vizB[k][1]
-                dia3 = vizB[k][2]
-                if (ano2 == ano3) and (mes2 == mes3) and (dia2 == dia3):
-                    for l in range(ind4, len(vizC)):
-                        ano4 = vizC[l][0]
-                        mes4 = vizC[l][1]
-                        dia4 = vizC[l][2]
-                        if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
-                            #print("\nAlvo:{}\nVizinhaA:{}\nVizinhaB:{}\nVizinhaC:{}\n".format(alv[i],vizA[j], vizB[k], vizC[l]))
-                            texto = str(ano1) + ';' + str(mes1) + ';' + str(dia1) + ';' + str(alv[i][3]) + ';' + str(alv[i][4]) + ';' + str(alv[i][5]) + ';' + str(vizA[j][3]) + ';' + str(vizA[j][4]) + ';'  + str(vizB[j][5]) + ';\n'
-                            arq.write(texto)
-                            print(len(alv[i]))
-                            comum += 1
-arq.close()
-print(comum)
+            for j in range(len(mat_in_valid)):
+                valor_ex = float(mat_res_valid[j])
+                valor_aprox = float(aprendiz_lv0.predict([(mat_in_valid[j])])[0])
+                Erro_abs = abs(valor_ex - valor_aprox)
+                Erro_rel = Erro_abs / valor_ex
+
+                soma_ea = soma_ea + Erro_abs
+                soma_er = soma_er + Erro_rel
+            
+            soma_ea_nteste = soma_ea_nteste + soma_ea/len(mat_in_valid)
+            soma_er_nteste = soma_er_nteste + soma_er/len(mat_in_valid)
+
+        media_ea = soma_ea_nteste / n_test
+        media_er = soma_er_nteste / n_test
+        porc_erro = media_ea * 100
+        r2 = soma_r2 / n_test
+
+        mat_valid_meta = list() #Lista com os predicts do aprendiz de level 0 para a validação no meta learning
+        for i in range(len(mat_in_valid)):
+            valor = float(aprendiz_lv0.predict([(mat_in_valid[i])])[0])
+            mat_valid_meta.append(valor) #Somente o valor do predict
+        
+        mat_input_meta = list() #Lista com a data (5o dia) + o predict do aprendiz de level 0
+        for i in range(len(mat_in_p2)):
+            aux = list()
+            valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])
+            aux.append(mat_in_p2[i][16])
+            aux.append(mat_in_p2[i][17])
+            aux.append(mat_in_p2[i][18])
+            aux.append(valor)  
+            mat_input_meta.append(aux)
+
+        return media_ea, media_er, porc_erro, r2, mat_valid_meta, mat_input_meta
+
+        
+

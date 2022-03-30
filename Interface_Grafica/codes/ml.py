@@ -14,6 +14,7 @@ import pickle
 
 class Treinamento:
     def ArvoreDecisao(self, cidade, indic, divisao, cri, spli, max_d, min_s, max_f,  max_l, n_testes, min_sam_spl, min_wei, minim, ccp, save):
+        
         tempo_inicial = time.time()
         if indic == 3:
             indicador = 'Precipitação'
@@ -39,12 +40,12 @@ class Treinamento:
         arq.write("\n\n---- Resultados Obtidos ----\n\n")
 
 
-        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
-        
+        #m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
+        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
         soma_er_nteste = 0 #* Soma dos erros relativos dos n testes
         soma_ea_nteste = 0 #* Soma dos erros absolutos dos n testes
         
-        
+        print("{} {} {} {}".format(len(m_trei), len(r_trei), len(m_vali), len(r_vali)))
        
         eixo_y_exato = list()
         eixo_y_predict = list()
@@ -151,7 +152,7 @@ class Treinamento:
         arq.write("\n\n---- Resultados Obtidos ----\n\n")       
         
         
-        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
+        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
         soma_er_nteste = 0
         soma_ea_nteste = 0
 
@@ -231,7 +232,7 @@ class Treinamento:
         return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
             
     def KNeighbors(self, cidade, indic, divisao, n_teste, n_nei, algor, leaf_s, p_val, n_jo, save):
-            m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
+            m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
             soma_er_nteste = 0
             soma_ea_nteste = 0
 
@@ -331,7 +332,7 @@ class Treinamento:
             return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
 
     def SVR(self, cidade, indic, divisao, n_teste, ker, degr, gam, coe, t, c, eps, shr, cache, verb, maxi, save):
-                m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
+                m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
                 soma_er_nteste = 0
                 soma_ea_nteste = 0
 
@@ -430,6 +431,7 @@ class Treinamento:
                 return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
 
     def prepara_matriz(self, local, divi, indicador, qtd_in):
+        print(local)
         norm = Tratamento()
 
         matriz = list()
@@ -492,7 +494,61 @@ class Treinamento:
         else:'''
         return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
 
+    def prepara_matriz3(self, cidade, divi, indicador):
+        matriz = list()
+        aux1 = list()
+        resultado = list()
 
+        
+        if cidade == 'Cidade alvo':
+            foco = indicador
+        elif cidade == 'Vizinha A':
+            foco = 3 + indicador
+        elif cidade == 'Vizinha B':
+            foco = 6 + indicador
+        else:
+            foco = 9 + indicador
+        print(foco)
+        t = Tratamento()
+        data = t.retorna_arq('Dados comum')
+        for i in range(len(data)):
+            buff = list()
+            buff.append(int(data[i][0]))
+            buff.append(int(data[i][1]))
+            buff.append(int(data[i][2]))
+            buff.append(float(data[i][foco]))
+            aux1.append(buff)
+        
+        mat_n = t.normalizar_dados(aux1)
+        buff.clear()
+
+        for i in range(len(mat_n)):
+            buff = list()
+            try:
+                for j in range(5):
+                    buff.append(mat_n[i+j][0])
+                    buff.append(mat_n[i+j][1])
+                    buff.append(mat_n[i+j][2])
+                    buff.append(mat_n[i+j][3])
+                if len(buff) == 20:
+                    matriz.append(buff[:19])
+                    resultado.append(buff[19])
+            except IndexError:
+                pass
+        tam = floor(len(matriz)*(divi/100))
+        matriz_treinamento = list()
+        resultado_treinamento = list()
+        matriz_validacao = list()
+        resultado_validacao = list()
+
+        for i in range(len(matriz)):
+            if i <= tam:
+                matriz_treinamento.append(matriz[i])
+                resultado_treinamento.append(resultado[i])
+            else:
+                matriz_validacao.append(matriz[i])
+                resultado_validacao.append(resultado[i])   
+        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
 
     def prepara_matriz2(self, local, divisao, indicadores, foco, normalizar): #Indicadores estão em forma de lista (no max 2 de 3) [3(chuva) e/ou 4(tmax) e/ou 5(tmin)]  || O foco vai ser qual indicador que o usuario quer que as máquinas façam o predict
 
@@ -584,4 +640,3 @@ class Treinamento:
                 dadosn.append(dado)
 
         return dadosn
-

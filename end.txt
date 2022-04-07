@@ -1,7 +1,7 @@
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/alvo_limpa.txt
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaA_limpa.txt
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaB_limpa.txt
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/vizinhaC_limpa.txt
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/dadoscomum.csv
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/buff.txt
-E:/IC/Dados/NOVAS REGIOES/AMPA/dados/Coordenadas.txt
+E:/IC/Dados/Teste2.0/DATA/alvo_limpa.txt
+E:/IC/Dados/Teste2.0/DATA/vizinhaA_limpa.txt
+E:/IC/Dados/Teste2.0/DATA/vizinhaB_limpa.txt
+E:/IC/Dados/Teste2.0/DATA/vizinhaC_limpa.txt
+E:/IC/Dados/Teste2.0/DATA/dadoscomum.csv
+E:/IC/Dados/Teste2.0/DATA/buff.txt
+E:/IC/Dados/Teste2.0/DATA/Coordenadas.txt

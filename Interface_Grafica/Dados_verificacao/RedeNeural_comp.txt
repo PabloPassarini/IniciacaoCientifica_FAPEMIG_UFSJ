@@ -2189,3 +2189,42 @@ media do Erro absoluto: 0.07378773615301051 || média do Erro relativo: 0.1667119
 Tempo de execução: 0.6163268089294434 s
 -------------------------------------------------------------
 
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Redes Neurais ----
+
+Horário dos teste: 2022-04-01 09:51:57
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> activation: relu
+  -> solver: adam
+  -> alpha: 0.0001
+  -> batch_size: auto
+  -> learning_rate: constant
+  -> learning_rate_init: 0.001
+  -> power_t: 0.5
+  -> max_iter: 200
+  -> shuffle: True
+  -> tol: 0.0001
+  -> verbose: False
+  -> warm_start: False
+  -> momentum: 0.9
+  -> nesterovs_momentum: True
+  -> early_stopping: False
+  -> validation_fraction: 0.1
+  -> beta_1: 0.9
+  -> beta_1: 0.999
+  -> n_iter_no_change: 10
+  -> max_fun: 15000
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.112218 || Erro Absoluto: 0.053931
+
+media do Erro absoluto: 0.05393144908337052 || média do Erro relativo: 0.11221822574506089
+
+Tempo de execução: 0.6074817180633545 s
+-------------------------------------------------------------
+

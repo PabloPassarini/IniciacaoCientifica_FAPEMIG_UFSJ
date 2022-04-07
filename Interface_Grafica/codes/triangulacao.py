@@ -540,10 +540,12 @@ class Triangulaction:
  
     def calcula_erros(self, real, aprox):
         t = Treinamento()
-        
+        '''
         exato = t.normalizar(real)
         aproximado = t.normalizar(aprox)
-             
+        ''' 
+        exato = real  
+        aproximado = aprox  
         soma_ea = 0
         soma_er = 0
         for i in range(len(exato)):

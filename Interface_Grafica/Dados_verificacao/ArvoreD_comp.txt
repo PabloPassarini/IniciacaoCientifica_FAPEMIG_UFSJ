@@ -1865,3 +1865,119 @@ media do Erro absoluto: 0.05931252807727131 || média do Erro relativo: 0.1279652
 Tempo de execução: 0.5639994144439697 s
 -------------------------------------------------------------
 
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-01 09:44:04
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.044426544209080834 || média do Erro relativo: 0.08869659689756991
+
+Tempo de execução: 0.316180944442749 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-01 09:51:51
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.04442654420908081 || média do Erro relativo: 0.08869659689757001
+
+Tempo de execução: 0.21644806861877441 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-01 09:53:03
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.04442654420908077 || média do Erro relativo: 0.08869659689757
+
+Tempo de execução: 0.21490073204040527 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-01 10:55:19
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.0444265442090807 || média do Erro relativo: 0.08869659689756978
+
+Tempo de execução: 0.4051642417907715 s
+-------------------------------------------------------------
+

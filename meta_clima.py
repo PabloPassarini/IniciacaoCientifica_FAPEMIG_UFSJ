@@ -5,17 +5,16 @@ from tkinter import ttk
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk) 
 import datetime as dt
-import os
+import os, csv
 import matplotlib.dates as mdates
 import pyscreenshot
 from tksheet import Sheet
-import csv
 from math import floor
 from sklearn import tree
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
-from math import floor
+import sklearn.utils._typedefs
 import time
 from sklearn import tree
 from sklearn.neural_network import MLPRegressor
@@ -23,33 +22,1640 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 import pickle
 from scipy import stats
+from lib2to3.pgen2.pgen import generate_grammar
 from haversine import haversine, Unit
 import folium
 from folium.map import Popup
 import webbrowser
 import math
-import sklearn.utils._typedefs
 
 os.system("cls")
 
-fundo = '#4F4F4F' #? Cor de fundo da tela
-fun_b = '#3CB371' #? Cor de fundo dos botoes
-fun_ap = '#9C444C'
-fun_alt = '#C99418'
-fun_meta_le = '#191970'
+class MetaL:
+    def prepara_input(self, indicador, janela):
+        if indicador == 1:
+            foco = 3
+        elif indicador == 2:
+            foco = 4
+        else: 
+            foco = 5
+
+        trat = Tratamento()
+        dt = trat.retorna_arq('Dados comum')
+
+        mat = list()
+        for i in range(len(dt)): #Vai fazer uma matriz com ano mes dia foco
+            aux = list()
+            aux.append(float(dt[i][0]))
+            aux.append(float(dt[i][1]))
+            aux.append(float(dt[i][2]))
+            aux.append(float(dt[i][foco]))
+            mat.append(aux)
+
+        norma = Treinamento()
+        mat_n = norma.normalizar(mat) #Vai normalizar os dados de cada coluna e de cada linha
+        if janela == 'Sim':
+            matriz_t, matriz_r = self.janela_deslizante(mat_n) #Vai fazer as matrizes para o input no formato de janela deslizante
+        else:
+            matriz_t, matriz_r = self.input_comum(mat_n)
+        m1_40_t = list()
+        m1_40_r = list()
+        m2_40_t = list() #Para o aprediz lv0 fazer os predicts, que serão um dos inputs do meta
+        m2_40_r = list()
+        m3_20_t = list()
+        m3_20_r = list()
+
+        tamanho = len(matriz_t)
+        t1 = floor(tamanho * 0.4)
+        t2 = t1 * 2
+
+        for i in range(tamanho): #Vai separa as porções de dados
+            if i <= t1:
+                m1_40_t.append(matriz_t[i])
+                m1_40_r.append(matriz_r[i])
+            elif i > t1 and i <=t2:
+                m2_40_t.append(matriz_t[i])
+                m2_40_r.append(matriz_r[i])
+            else:
+                m3_20_t.append(matriz_t[i])
+                m3_20_r.append(matriz_r[i])
+        
+        return m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r
+         
+    def janela_deslizante(self, data):
+        matriz = list()
+        resultado = list()
+        buff = list()
+        for i in range(len(data)):
+            buff = list()
+            try:
+                for j in range(5):
+                    buff.append(data[i+j][0])
+                    buff.append(data[i+j][1])
+                    buff.append(data[i+j][2])
+                    buff.append(data[i+j][3])
+                if len(buff) == 20:
+                    matriz.append(buff[:19])
+                    resultado.append(buff[19])
+            except IndexError:
+                pass
+        return matriz, resultado
+
+    def input_comum(self, data):
+        matriz = list()
+        resultado = list()
+        
+        for i in range(len(data)):
+            buff = list()
+            buff.append(data[i][0])
+            buff.append(data[i][1])
+            buff.append(data[i][2])
+            matriz.append(buff)
+
+            resultado.append(data[i][3])
+
+        return matriz, resultado
+    
+    def base_learn(self, mach, pre, n_test, mat_in_tr, mat_res_tr, mat_in_valid, mat_res_valid, mat_in_p2, mat_res_p2, janela):
+        if pre == 0:
+            if mach == 'Decision Trees':
+                aprendiz_lv0 = tree.DecisionTreeRegressor()
+            elif mach == 'Neural network':
+                aprendiz_lv0 = MLPRegressor()
+            elif mach == 'Nearest Neighbors':
+                aprendiz_lv0 = KNeighborsRegressor()
+            elif mach == 'Support Vector':
+                aprendiz_lv0 = SVR()
+
+        soma_er_nteste = 0
+        soma_ea_nteste = 0
+        
+        soma_r2 = 0
+        for i in range(n_test):
+            aprendiz_lv0 = aprendiz_lv0.fit(mat_in_tr, mat_res_tr)
+            soma_ea = 0
+            soma_er = 0
+            soma_r2 = soma_r2 + aprendiz_lv0.score(mat_in_valid, mat_res_valid)
+            for j in range(len(mat_in_valid)):
+                valor_ex = float(mat_res_valid[j])
+                valor_aprox = float(aprendiz_lv0.predict([(mat_in_valid[j])])[0])
+                Erro_abs = abs(valor_ex - valor_aprox)
+                Erro_rel = Erro_abs / valor_ex
+
+                soma_ea = soma_ea + Erro_abs
+                soma_er = soma_er + Erro_rel
+            
+            soma_ea_nteste = soma_ea_nteste + soma_ea/len(mat_in_valid)
+            soma_er_nteste = soma_er_nteste + soma_er/len(mat_in_valid)
+
+        media_ea = soma_ea_nteste / n_test
+        media_er = soma_er_nteste / n_test
+        porc_erro = media_ea * 100
+        r2 = soma_r2 / n_test
+
+        #Preparando os dados do aprendiz lv0 para o aprendiz lv1
+        mat_p2 = list()
+        if janela == 'Sim':        
+            for i in range(len(mat_in_p2)):
+                aux = list()
+                valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])
+                aux.append(mat_in_p2[i][16])
+                aux.append(mat_in_p2[i][17])
+                aux.append(mat_in_p2[i][18])
+                aux.append(valor)
+                mat_p2.append(aux)
+        else:
+            for i in range(len(mat_in_p2)):
+                aux = list()
+                valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])
+                aux.append(mat_in_p2[i][0])
+                aux.append(mat_in_p2[i][1])
+                aux.append(mat_in_p2[i][2])
+                aux.append(valor)
+                mat_p2.append(aux)
+        return mat_p2, media_ea, media_er, porc_erro, r2
 
 
+    def triangula(self, metodo, foco):
+        t = Triangulaction()
+        nor = Treinamento()
+        if metodo == 'Inverse Distance Weighted':
+            t.idw(foco)
+            matriz_triang = nor.normalizar(t.get_idw()[5])
+            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_idw()
+            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
+        elif metodo == 'Arithmetic Average':
+            t.aa(foco)
+            matriz_triang = nor.normalizar(t.get_aa()[5])
+            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_aa()
+            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
+        elif metodo == 'Regional Weight':
+            t.rw(foco)
+            matriz_triang = nor.normalizar(t.get_rw()[5])
+            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_rw()
+            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
+        elif metodo == 'Optimized Normal Ratio':
+            t.onr(foco)
+            matriz_triang = nor.normalizar(t.get_onr()[5])
+            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_onr()
+            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
+
+        tamanho = len(matriz_triang)
+        t1 = floor(tamanho * 0.4)
+        t2 = t1 * 2
+
+        matriz_final_data = list()
+        matriz_final_dado = list()
+        
+        for i in range(len(matriz_triang)):
+            if i > t1 and i <= t2:
+                aux = list()
+                aux.append(matriz_triang[i][0])
+                aux.append(matriz_triang[i][1])
+                aux.append(matriz_triang[i][2])
+                matriz_final_data.append(aux)
+                matriz_final_dado.append(matriz_triang[i][3])
+                
+
+        return matriz_final_data, matriz_final_dado, erro_abs, erro_rel
+        
+        
+    def calcula_erro_tri(self, x, y):
+        t = Treinamento()
+        mat1 = t.normalizar(x)
+        mat2 = t.normalizar(y)
+        
+        soma_ea = 0
+        soma_er = 0
+        for i in range(len(mat1)):
+            ea = abs(float(mat1[i]) - float(mat2[i]))
+            er = ea / float(mat1[i])
+
+            soma_ea = soma_ea + ea
+            soma_er = soma_er + er
+
+        ea = soma_ea / len(mat1)
+        er = soma_er / len(mat2)
+        return ea, er
 
 
+    def meta_learning_personalizado(self, indicador, base_l, metodo_tri, meta_l, pre1, pre2, n_test, janela):
+        m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r = self.prepara_input(indicador, janela)
+        if base_l != 'Nenhum':
+            matriz_input, base_ea, base_er, base_porc, base_r2 = self.base_learn(base_l, 0, n_test, m1_40_t, m1_40_r, m3_20_t, m3_20_r, m2_40_t, m2_40_r, janela)
+            del matriz_input[:2]
+        if metodo_tri != 'Nenhum':
+            seila, matriz_trian, tria_ea, tria_er = self.triangula(metodo_tri, indicador)
+            
+            del matriz_trian[:4]
+        
+        matriz_datas, a, b, c = self.triangula('Arithmetic Average', indicador)
+        del matriz_datas[:4]
+        
+        
+        del m2_40_r[:2]
+        
+        matriz_f = list()
+        result_f = list()
+        for i in range(len(matriz_datas)):
+            aux = list()
+            if base_l == 'Nenhum' :
+                aux.append(matriz_datas[i][0])
+                aux.append(matriz_datas[i][1])
+                aux.append(matriz_datas[i][2])
+                aux.append(matriz_trian[i])
+            elif metodo_tri == 'Nenhum':
+                aux.append(matriz_datas[i][0])
+                aux.append(matriz_datas[i][1])
+                aux.append(matriz_datas[i][2])
+                aux.append(matriz_input[i][3])
+            else:
+                aux.append(matriz_datas[i][0])
+                aux.append(matriz_datas[i][1])
+                aux.append(matriz_datas[i][2])
+                aux.append(matriz_trian[i])
+                aux.append(matriz_input[i][3])
+            matriz_f.append(aux)
+
+        if pre2 == 0:
+            if meta_l == 'Decision Trees':
+                aprendiz_lv1 = tree.DecisionTreeRegressor()
+            elif meta_l == 'Neural network':
+                aprendiz_lv1 = MLPRegressor()
+            elif meta_l == 'Nearest Neighbors':
+                aprendiz_lv1 = KNeighborsRegressor()
+            elif meta_l == 'Support Vector':
+                aprendiz_lv1 = SVR()
+
+        
+        t = len(matriz_f)
+        divi = t - floor(t*0.2)
+        x_apre = list()
+        y_apre = list()
+
+        x_test = list()
+        y_test = list()
+        
+        for i in range(t):
+            if i <= divi:
+                x_apre.append(matriz_f[i])
+                y_apre.append(m2_40_r[i])
+            else:
+                x_test.append(matriz_f[i])
+                y_test.append(m2_40_r[i])
+        soma = 0
+        soma_er_nteste = 0
+        soma_ea_nteste = 0
+        x_meta = list()
+        y_meta = list()
+        y_alvo = list()
+
+        x = 0
+        for i in range(n_test):
+            aprendiz_lv1 = aprendiz_lv1.fit(x_apre, y_apre)
+            val = aprendiz_lv1.score(x_test, y_test)
+            soma = soma + val #Calcular o R2
+
+            soma_ea = 0
+            soma_er = 0
+            for j in range(len(x_test)):
+                valor_ex = float(y_test[j])
+                valor_aprox = float(aprendiz_lv1.predict([(x_test[j])])[0])
+
+                y_meta.append(valor_aprox)
+                y_alvo.append(valor_ex)
+                x_meta.append(x)
+                x += 1
+
+                Erro_abs = abs(valor_ex - valor_aprox)
+                Erro_rel = Erro_abs / valor_ex
+
+                soma_ea = soma_ea + Erro_abs
+                soma_er = soma_er + Erro_rel
+            
+            soma_ea_nteste = soma_ea_nteste + soma_ea/len(x_test)
+            soma_er_nteste = soma_er_nteste + soma_er/len(x_test)
+        meta_ea = soma_ea_nteste / n_test
+        meta_er = soma_er_nteste / n_test
+        meta_porc_erro = meta_ea * 100
+        meta_r2 = soma / n_test
+        
+        if base_l == 'Nenhum':
+            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, 0, 0, 0, 0, tria_ea, tria_er
+        elif metodo_tri == 'Nenhum':
+            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, base_ea, base_er, base_porc, base_r2, 0, 0
+        else:
+            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, base_ea, base_er, base_porc, base_r2, tria_ea, tria_er
+    
+    def meta_learning_combina(self,  foco, pre1, pre2, n_test, janela):
+        machine_l = ['Nenhum','Decision Trees', 'Neural network', 'Nearest Neighbors', 'Support Vector']
+        triangulacao = ['Nenhum', 'Arithmetic Average', 'Inverse Distance Weighted', 'Regional Weight', 'Optimized Normal Ratio']
+        meta_l = ['Decision Trees', 'Neural network', 'Nearest Neighbors', 'Support Vector']
+        
+        todos_mod = list()
+        ranking_mod = list()
+
+        if foco == 'Precipitação':
+            indicador = 1
+        elif foco == 'Temperatura máxima':
+            indicador = 2
+        else:
+             indicador = 3
+
+        m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r = self.prepara_input(indicador, janela)
+
+        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_comb.txt', 'w')
+        arq2 = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_res.csv', 'w')
+        arq3 = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_best_results.csv', 'w')
+
+        arq2.write("Modelo;Machine Learning;Triangulação;Meta Learning;Erro Absoluto;Erro Relativo;Erro(%);R2;\n")
+        arq3.write("Modelo;Erro(%);\n")
+        Modelos = dict()
+        cont_model = 1
+        teste = repr("Modelo").center(8) + ' || ' + repr('Base-Learning').center(30) + ' || ' +  repr('Triangulation').center(30) + ' || ' + repr('Meta-Learning').center(30) + ' || ' +  repr("Erro(%)").center(20)
+        
+        for i in range(len(machine_l)):
+            for j in range(len(triangulacao)):
+                for k in range(len(meta_l)):
+                    if machine_l[i] == 'Nenhum' and triangulacao[j] == 'Nenhum':
+                        k += 1
+                    else:
+                        if machine_l[i] != 'Nenhum':
+                            matriz_input, base_ea, base_er, base_porc, base_r2 = self.base_learn(machine_l[i], 0, n_test, m1_40_t, m1_40_r, m3_20_t, m3_20_r, m2_40_t, m2_40_r, janela)
+                            del matriz_input[:2]
+                        if triangulacao[j] != 'Nenhum':
+                            seila, matriz_trian, tria_ea, tria_er = self.triangula(triangulacao[j], indicador)
+                            del matriz_trian[:4]
+                        
+                        matriz_datas, a, b, c = self.triangula('Arithmetic Average', indicador)
+                        del matriz_datas[:4]
+                        del m2_40_r[:2]
+
+                        matriz_f = list()
+                        result_f = list()
+                        for l in range(len(matriz_datas)):
+                            aux = list()
+                            if machine_l[i] == 'Nenhum' and triangulacao[j] != 'Nenhum':
+                                aux.append(matriz_datas[l][0])
+                                aux.append(matriz_datas[l][1])
+                                aux.append(matriz_datas[l][2])
+                                aux.append(matriz_trian[l])
+                            if triangulacao[j] == 'Nenhum' and machine_l[i] != 'Nenhum':
+                                aux.append(matriz_datas[l][0])
+                                aux.append(matriz_datas[l][1])
+                                aux.append(matriz_datas[l][2])
+                                aux.append(matriz_input[l][3])
+                            if triangulacao[j] != 'Nenhum' and machine_l[i] != 'Nenhum':
+                                aux.append(matriz_datas[l][0])
+                                aux.append(matriz_datas[l][1])
+                                aux.append(matriz_datas[l][2])
+                                aux.append(matriz_trian[l])
+                                aux.append(matriz_input[l][3])
+                            matriz_f.append(aux)
+
+                        if pre2 == 0:
+                            if meta_l[k] == 'Decision Trees':
+                                aprendiz_lv1 = tree.DecisionTreeRegressor()
+                            elif meta_l[k] == 'Neural network':
+                                aprendiz_lv1 = MLPRegressor()
+                            elif meta_l[k] == 'Nearest Neighbors':
+                                aprendiz_lv1 = KNeighborsRegressor()
+                            elif meta_l[k] == 'Support Vector':
+                                aprendiz_lv1 = SVR()
+
+                        
+                        t = len(m2_40_r)
+                        divi = t - floor(t*0.2)
+                        x_apre = list()
+                        y_apre = list()
+
+                        x_test = list()
+                        y_test = list()
+                        
+                        for n in range(t):
+                            if n <= divi:
+                                x_apre.append(matriz_f[n])
+                                y_apre.append(m2_40_r[n])
+                            else:
+                                x_test.append(matriz_f[n])
+                                y_test.append(m2_40_r[n])
+                        soma = 0
+                        soma_er_nteste = 0
+                        soma_ea_nteste = 0
+                        x_meta = list()
+                        y_meta = list()
+                        y_alvo = list()
+
+                        x = 0
+                        for l in range(n_test):
+                            aprendiz_lv1 = aprendiz_lv1.fit(x_apre, y_apre)
+                            val = aprendiz_lv1.score(x_test, y_test)
+                            soma = soma + val #Calcular o R2
+
+                            soma_ea = 0
+                            soma_er = 0
+                            for m in range(len(x_test)):
+                                valor_ex = float(y_test[m])
+                                valor_aprox = float(aprendiz_lv1.predict([(x_test[m])])[0])
+
+                                y_meta.append(valor_aprox)
+                                y_alvo.append(valor_ex)
+                                x_meta.append(x)
+                                x += 1
+
+                                Erro_abs = abs(valor_ex - valor_aprox)
+                                Erro_rel = Erro_abs / valor_ex
+
+                                soma_ea = soma_ea + Erro_abs
+                                soma_er = soma_er + Erro_rel
+                            
+                            soma_ea_nteste = soma_ea_nteste + soma_ea/len(x_test)
+                            soma_er_nteste = soma_er_nteste + soma_er/len(x_test)
+                        meta_ea = soma_ea_nteste / n_test
+                        meta_er = soma_er_nteste / n_test
+                        meta_porc_erro = meta_ea * 100
+                        meta_r2 = soma / n_test
+
+                        texto = str(cont_model) + " -> Machine Learning: " + machine_l[i] + "  ||  Triangulação: " + triangulacao[j] + "  || Meta Learning: " + meta_l[k] + "  |Resultados para " + str(n_test)+ " testes| --> Erro Absoluto: " + str(meta_ea) + "  |  Erro Relativo: " + str(meta_er) + "  |  Erro(%): " + str(meta_porc_erro) + "  |  R2: " + str(meta_r2)
+                        arq.write(texto + "\n")
+                        
+                        teste = repr(cont_model).center(8) + ' || ' + repr(machine_l[i]).center(30) + ' || ' + repr(triangulacao[j]).center(30) + ' || ' + repr(meta_l[k]).center(30) + ' || ' + repr(meta_porc_erro).center(20)
+                        #print(teste)
+                        
+                        
+                        texto = str(cont_model) + ";" + machine_l[i] + ";" + triangulacao[j] + ";" + meta_l[k] + ";" + str(meta_ea).replace('.', ',') + ";" + str(meta_er).replace('.', ',') + ";" + str(meta_porc_erro).replace('.', ',') + ";" + str(meta_r2).replace('.', ',') + ";"   
+                        arq2.write(texto + "\n")
+
+                        Modelos[str(cont_model)] = meta_porc_erro
+                        
+
+                        aux = list()
+                        aux.append(cont_model)      #0
+                        aux.append(machine_l[i])    #1
+                        aux.append(triangulacao[j]) #2
+                        aux.append(meta_l[k])       #3
+                        aux.append(n_test)          #4
+                        aux.append(round(meta_ea, 4)) #5
+                        aux.append(round(meta_er, 4)) #6
+                        aux.append(round(meta_porc_erro, 4)) #7
+                        aux.append(round(meta_r2, 4)) #8
+                        todos_mod.append(aux)
+
+                        cont_model += 1
+        for z in sorted(Modelos, key=Modelos.get):
+            arq3.write(str(z) + ";" + str(Modelos[z]).replace('.', ',') + ";\n")
+            aux = list()
+            aux.append(str(z))
+            aux.append(str(Modelos[z]).replace('.', ','))
+            ranking_mod.append(aux)             
+        arq.close()
+        arq2.close()
+        arq3.close()
+
+        return todos_mod, ranking_mod
+
+class Treinamento:
+    def ArvoreDecisao(self, cidade, indic, divisao, cri, spli, max_d, min_s, max_f,  max_l, n_testes, min_sam_spl, min_wei, minim, ccp, save):
+        
+        tempo_inicial = time.time()
+        if indic == 3:
+            indicador = 'Precipitação'
+        elif indic == 4:
+            indicador = 'Temperatura máxima'
+        else:
+            indicador = 'Temperatura miníma'
 
 
+        param = [cri, spli, max_d, min_s, max_f,  max_l, min_sam_spl, min_wei, minim, ccp]
+        nome_p = ['criterion: ', 'splitter: ', 'max_depth: ', 'min_samples_leaf: ', 'max_features: ', 'max_leaf_nodes: ', 'min_samples_split: ', 'min_weight_fraction_leaf: ', 'min_impurity_decrease: ', 'ccp_alpha: ']
+        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\ArvoreD_comp.txt', 'a')
 
+        arq.write("-------------------------------------------------------------\n")
+        arq.write("---- Erros Obtidos a partir da ML Arvore de Decisão ----\n\n")
+        hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+        arq.write("Horário dos teste: " + hora + "\n")
+        arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
+        arq.write("Parâmetros usados:\n")
+        for i in range(len(param)):
+            arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
+        
+        arq.write("\n\n---- Resultados Obtidos ----\n\n")
+
+
+        #m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
+        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
+        soma_er_nteste = 0 #* Soma dos erros relativos dos n testes
+        soma_ea_nteste = 0 #* Soma dos erros absolutos dos n testes
+        
+        print("{} {} {} {}".format(len(m_trei), len(r_trei), len(m_vali), len(r_vali)))
+       
+        eixo_y_exato = list()
+        eixo_y_predict = list()
+        eixo_x = list()
+        cont = 1
+        cont2 = 1
+        for j in range(n_testes):
+            aprendiz = tree.DecisionTreeRegressor(criterion=cri, splitter=spli, max_depth=max_d, min_samples_leaf=min_s, max_features=max_f, max_leaf_nodes=max_l, min_samples_split=min_sam_spl, min_weight_fraction_leaf=min_wei, min_impurity_decrease=minim, ccp_alpha=ccp)
+            aprendiz = aprendiz.fit(m_trei, r_trei)
+
+            soma_ea = 0 #* Soma dos erros absolutos
+            soma_er = 0 #* Soma dos erros relativos
+
+            for i in range(len(m_vali)):
+                valor_exato = r_vali[i]
+                valor_aprox = aprendiz.predict([m_vali[i]])[0]
+                if j != (n_testes):
+                    eixo_y_exato.append(valor_exato)
+                    eixo_y_predict.append(valor_aprox)
+                    eixo_x.append(cont)
+                    cont += 1
+                
+                Erro_absoluto = valor_exato - valor_aprox
+
+                if Erro_absoluto < 0:
+                    Erro_absoluto = Erro_absoluto * (-1)
+                
+                Erro_relativo = (Erro_absoluto/valor_exato)
+
+                soma_ea = soma_ea + Erro_absoluto
+                soma_er = soma_er + Erro_relativo
+            
+            soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
+            soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
+            
+            arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
+            cont2 += 1
+
+        pontuacao = round((((soma_er_nteste/n_testes)*100) - 100)* (-1),2)
+        erro = (eixo_y_exato[i] - eixo_y_predict[i])
+        if erro < 0:
+            erro = erro * (-1)
+                
+
+        maior_ea = erro
+        exat_maior = eixo_y_exato[0]
+        pre_maior = eixo_y_predict[0]
+
+        menor_ea = erro
+        exat_menor = eixo_y_exato[0]
+        pre_menor = eixo_y_predict[0]
+
+        for i in range(1, len(eixo_x)):
+            erro = (eixo_y_exato[i] - eixo_y_predict[i])
+            if erro < 0:
+                erro = erro * (-1)
+
+            if erro > maior_ea:
+                maior_ea = erro
+                exat_maior = eixo_y_exato[i]
+                pre_maior = eixo_y_predict[i]
+            
+            if (erro) < menor_ea and (erro) > 0:
+                menor_ea = erro
+                exat_menor = eixo_y_exato[i]
+                pre_menor = eixo_y_predict[i]
+        
+        media_ea = soma_ea_nteste/n_testes
+        media_er = soma_er_nteste/n_testes
+
+        if save == 1:
+            pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_ad.sav', 'wb'))
+
+
+        arq.write("\nmedia do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
+        tempo_final = time.time()
+        tempo_total = str(tempo_final - tempo_inicial)
+        arq.write("\nTempo de execução: " + tempo_total + " s\n")
+        arq.write("-------------------------------------------------------------\n\n")
+        arq.close()
+        return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
+          
+    def RedeNeural(self, cidade, indic, divisao, n_teste, activ, solv, alp, batc, learnrat, learnratini, powrt, maxiter,shuf, tol_v, verb, warmst, moment, nestr, early, valid, b1, b2, niter, maxf, save):
+        tempo_inicial = time.time()
+        if indic == 3:
+            indicador = 'Precipitação'
+        elif indic == 4:
+            indicador = 'Temperatura máxima'
+        else:
+            indicador = 'Temperatura miníma'
+
+        param = [activ, solv, alp, batc, learnrat, learnratini, powrt, maxiter,shuf, tol_v, verb, warmst, moment, nestr, early, valid, b1, b2, niter, maxf]
+        nome_p = ['activation: ', 'solver: ', 'alpha: ', 'batch_size: ', 'learning_rate: ', 'learning_rate_init: ', 'power_t: ', 'max_iter: ', 'shuffle: ', 'tol: ', 'verbose: ', 'warm_start: ', 'momentum: ', 'nesterovs_momentum: ', 'early_stopping: ', 'validation_fraction: ', 'beta_1: ', 'beta_1: ', 'n_iter_no_change: ', 'max_fun: ']
+        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\RedeNeural_comp.txt', 'a')
+        arq.write("-------------------------------------------------------------\n")
+        arq.write("---- Erros Obtidos a partir da ML Redes Neurais ----\n\n")
+        hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+        arq.write("Horário dos teste: " + hora + "\n")
+        arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
+        arq.write("Parâmetros usados:\n")
+        for i in range(len(param)):
+            arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
+        
+        arq.write("\n\n---- Resultados Obtidos ----\n\n")       
+        
+        
+        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
+        soma_er_nteste = 0
+        soma_ea_nteste = 0
+
+        eixo_y_exato = list()
+        eixo_y_predict = list()
+        eixo_x = list()
+        cont = 1
+        cont2 = 1
+
+        for j in range(n_teste):
+            aprendiz = MLPRegressor(activation=activ, solver=solv, alpha=alp, batch_size=batc, learning_rate=learnrat, learning_rate_init=learnratini, power_t=powrt, max_iter=maxiter, shuffle=shuf, tol=tol_v, verbose=verb, warm_start=warmst, momentum=moment, nesterovs_momentum=nestr, early_stopping=early, validation_fraction=valid, beta_1=b1, beta_2=b2,n_iter_no_change=niter,max_fun=maxf)
+            aprendiz = aprendiz.fit(m_trei, r_trei)
+
+            soma_ea = 0
+            soma_er = 0
+
+            for i in range(len(m_vali)):
+                valor_exato = r_vali[i]
+                valor_aprox = aprendiz.predict([m_vali[i]])[0]
+
+                if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
+                    eixo_y_exato.append(valor_exato)
+                    eixo_y_predict.append(valor_aprox)
+                    eixo_x.append(cont)
+                    cont += 1
+            
+                Erro_absoluto = abs(valor_exato - valor_aprox)
+                Erro_relativo = Erro_absoluto/valor_exato
+
+                soma_ea = soma_ea + Erro_absoluto
+                soma_er = soma_er + Erro_relativo
+
+            soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
+            soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
+            
+            arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
+            cont2 += 1
+        pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
+        erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
+        
+
+        maior_ea = erro
+        exat_maior = eixo_y_exato[0]
+        pre_maior = eixo_y_predict[0]
+
+        menor_ea = erro
+        exat_menor = eixo_y_exato[0]
+        pre_menor = eixo_y_predict[0]
+
+        for i in range(1, len(eixo_x)):
+            erro = (eixo_y_exato[i] - eixo_y_predict[i])
+            if erro < 0:
+                erro = erro * (-1)
+
+            if erro > maior_ea:
+                maior_ea = erro
+                exat_maior = eixo_y_exato[i]
+                pre_maior = eixo_y_predict[i]
+                
+            if (erro) < menor_ea and (erro) > 0:
+                menor_ea = erro
+                exat_menor = eixo_y_exato[i]
+                pre_menor = eixo_y_predict[i]
+            
+        media_ea = soma_ea_nteste/n_teste
+        media_er = soma_er_nteste/n_teste
+
+        if save == 1:
+            pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_rn.sav', 'wb'))
+
+        arq.write("\nmedia do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
+        tempo_final = time.time()
+        tempo_total = str(tempo_final - tempo_inicial)
+        arq.write("\nTempo de execução: " + tempo_total + " s\n")
+        arq.write("-------------------------------------------------------------\n\n")
+        arq.close()
+        return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
+            
+    def KNeighbors(self, cidade, indic, divisao, n_teste, n_nei, algor, leaf_s, p_val, n_jo, save):
+            m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
+            soma_er_nteste = 0
+            soma_ea_nteste = 0
+
+            eixo_y_exato = list()
+            eixo_y_predict = list()
+            eixo_x = list()
+            cont = 1
+            cont2 = 1
+
+            if indic == 3:
+                indicador = 'Precipitação'
+            elif indic == 4:
+                indicador = 'Temperatura máxima'
+            else:
+                indicador = 'Temperatura miníma'
+
+            param = [n_nei, algor, leaf_s, p_val, n_jo]
+            nome_p = ['n_neighbors: ', 'algorithm: ', 'leaf_size: ', 'p: ', 'n_jobs: ']
+            arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\KNeighbors_comp.txt', 'a')
+
+            arq.write("-------------------------------------------------------------\n")
+            arq.write("---- Erros Obtidos a partir da ML KNeighbors ----\n\n")
+            hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+            arq.write("Horário dos teste: " + hora + "\n")
+            arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
+            arq.write("Parâmetros usados:\n")
+            for i in range(len(param)):
+                arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
+            
+            arq.write("\n\n---- Resultados Obtidos ----\n\n")
+
+            for j in range(n_teste):
+                aprendiz = KNeighborsRegressor(n_neighbors=n_nei, algorithm=algor, leaf_size=leaf_s, p=p_val, n_jobs=n_jo)
+                aprendiz = aprendiz.fit(m_trei, r_trei)
+
+                soma_ea = 0
+                soma_er = 0
+
+                for i in range(len(m_vali)):
+                    valor_exato = r_vali[i]
+                    valor_aprox = aprendiz.predict([m_vali[i]])[0]
+
+                    if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
+                        eixo_y_exato.append(valor_exato)
+                        eixo_y_predict.append(valor_aprox)
+                        eixo_x.append(cont)
+                        cont += 1
+                
+                    Erro_absoluto = abs(valor_exato - valor_aprox)
+                    Erro_relativo = Erro_absoluto/valor_exato
+
+                    soma_ea = soma_ea + Erro_absoluto
+                    soma_er = soma_er + Erro_relativo
+
+                soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
+                soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
+
+                arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
+                cont2 += 1
+
+            pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
+            erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
+            
+
+            maior_ea = erro
+            exat_maior = eixo_y_exato[0]
+            pre_maior = eixo_y_predict[0]
+
+            menor_ea = erro
+            exat_menor = eixo_y_exato[0]
+            pre_menor = eixo_y_predict[0]
+
+            for i in range(1, len(eixo_x)):
+                erro = (eixo_y_exato[i] - eixo_y_predict[i])
+                if erro < 0:
+                    erro = erro * (-1)
+
+                if erro > maior_ea:
+                    maior_ea = erro
+                    exat_maior = eixo_y_exato[i]
+                    pre_maior = eixo_y_predict[i]
+                    
+                if (erro) < menor_ea and (erro) > 0:
+                    menor_ea = erro
+                    exat_menor = eixo_y_exato[i]
+                    pre_menor = eixo_y_predict[i]
+                
+            media_ea = soma_ea_nteste/n_teste
+            media_er = soma_er_nteste/n_teste
+
+            if save == 1:
+                pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_kn.sav', 'wb'))
+
+            arq.write("media do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
+            arq.write("-------------------------------------------------------------\n\n")
+            arq.close()
+            return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
+
+    def SVR(self, cidade, indic, divisao, n_teste, ker, degr, gam, coe, t, c, eps, shr, cache, verb, maxi, save):
+                m_trei, r_trei, m_vali, r_vali = self.prepara_matriz3(cidade, divisao, indic)
+                soma_er_nteste = 0
+                soma_ea_nteste = 0
+
+                eixo_y_exato = list()
+                eixo_y_predict = list()
+                eixo_x = list()
+                cont = 1
+                cont2 = 1
+
+                if indic == 3:
+                    indicador = 'Precipitação'
+                elif indic == 4:
+                    indicador = 'Temperatura máxima'
+                else:
+                    indicador = 'Temperatura miníma'
+                param = [ker, degr, gam, coe, t, c, eps, shr, cache, verb, maxi]
+                nome_p = ['kernel: ', 'degree: ', 'gamma: ', 'coef0: ', 'tol: ', 'C: ', 'epsilon: ', 'shrinking: ', 'cache_size: ', 'verbose: ', 'max_iter: ']
+                arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\SupportVectorMachine_comp.txt', 'a')
+
+                arq.write("-------------------------------------------------------------\n")
+                arq.write("---- Erros Obtidos a partir da ML Support Vector Machine ----\n\n")
+                hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+                arq.write("Horário dos teste: " + hora + "\n")
+                arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
+                arq.write("Parâmetros usados:\n")
+                for i in range(len(param)):
+                    arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
+                
+                arq.write("\n\n---- Resultados Obtidos ----\n\n")
+
+
+                for j in range(n_teste):
+                    aprendiz = SVR(kernel=ker, degree=degr, gamma=gam, coef0=coe, tol=t, C=c, epsilon=eps, shrinking=shr, cache_size=cache, verbose=verb, max_iter=maxi)
+                    aprendiz = aprendiz.fit(m_trei, r_trei)
+
+                    soma_ea = 0
+                    soma_er = 0
+
+                    for i in range(len(m_vali)):
+                        valor_exato = r_vali[i]
+                        valor_aprox = aprendiz.predict([m_vali[i]])[0]
+
+                        if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
+                            eixo_y_exato.append(valor_exato)
+                            eixo_y_predict.append(valor_aprox)
+                            eixo_x.append(cont)
+                            cont += 1
+                    
+                        Erro_absoluto = abs(valor_exato - valor_aprox)
+                        Erro_relativo = Erro_absoluto/valor_exato
+
+                        soma_ea = soma_ea + Erro_absoluto
+                        soma_er = soma_er + Erro_relativo
+
+                    soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
+                    soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
+
+                    arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
+                    cont2 += 1
+
+                pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
+                erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
+                
+
+                maior_ea = erro
+                exat_maior = eixo_y_exato[0]
+                pre_maior = eixo_y_predict[0]
+
+                menor_ea = erro
+                exat_menor = eixo_y_exato[0]
+                pre_menor = eixo_y_predict[0]
+
+                for i in range(1, len(eixo_x)):
+                    erro = (eixo_y_exato[i] - eixo_y_predict[i])
+                    if erro < 0:
+                        erro = erro * (-1)
+
+                    if erro > maior_ea:
+                        maior_ea = erro
+                        exat_maior = eixo_y_exato[i]
+                        pre_maior = eixo_y_predict[i]
+                        
+                    if (erro) < menor_ea and (erro) > 0:
+                        menor_ea = erro
+                        exat_menor = eixo_y_exato[i]
+                        pre_menor = eixo_y_predict[i]
+                    
+                media_ea = soma_ea_nteste/n_teste
+                media_er = soma_er_nteste/n_teste
+
+                if save == 1:
+                    pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_svr.sav', 'wb'))
+                arq.write("media do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
+                arq.write("-------------------------------------------------------------\n\n")
+                arq.close()
+                return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
+
+    def prepara_matriz(self, local, divi, indicador, qtd_in):
+        print(local)
+        norm = Tratamento()
+
+        matriz = list()
+        aux1 = list()
+        resultado = list()
+        arq = open(local)
+        for i in arq:
+            buff = list()
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            i = i.split(',') 
+            buff.append(int(i[2])) #dia
+            buff.append(int(i[1])) #mes
+            buff.append(int(i[0])) #ano
+            buff.append(float(i[indicador])) #Indicador selecionado pelo usuário
+            aux1.append(buff)
+        mat_n = norm.normalizar_dados(aux1)
+
+
+        buff.clear()
+        
+        for i in range(len(mat_n)):
+            buff = list()
+            try:
+                for j in range(5):
+                    buff.append(mat_n[i+j][0])
+                    buff.append(mat_n[i+j][1])
+                    buff.append(mat_n[i+j][2])
+                    buff.append(mat_n[i+j][3])
+                if len(buff) == 20:
+                    matriz.append(buff[:19])
+                    resultado.append(buff[19])
+            except IndexError:
+                pass
+        arq.close()
+        tam = floor(len(matriz)*(divi/100))
+        matriz_treinamento = list()
+        resultado_treinamento = list()
+        matriz_validacao = list()
+        resultado_validacao = list()
+
+        for i in range(len(matriz)):
+            if i <= tam:
+                matriz_treinamento.append(matriz[i])
+                resultado_treinamento.append(resultado[i])
+            else:
+                matriz_validacao.append(matriz[i])
+                resultado_validacao.append(resultado[i])
+        mat_trein_n = list()
+        res_tre_n = list()
+        mat_val_n = list()
+        res_val_n = list()
+        '''if indicador == 3:
+            mat_trein_n = norm.normalizar_dados(matriz_treinamento)
+            res_tre_n = norm.normalizar_dados(resultado_treinamento)
+            mat_val_n = norm.normalizar_dados(matriz_validacao)
+            res_val_n = norm.normalizar_dados(resultado_validacao)
+            return mat_trein_n, res_tre_n, mat_val_n, res_val_n
+        else:'''
+        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
+
+    def prepara_matriz3(self, cidade, divi, indicador):
+        matriz = list()
+        aux1 = list()
+        resultado = list()
+
+        
+        if cidade == 'Cidade alvo':
+            foco = indicador
+        elif cidade == 'Vizinha A':
+            foco = 3 + indicador
+        elif cidade == 'Vizinha B':
+            foco = 6 + indicador
+        else:
+            foco = 9 + indicador
+        print(foco)
+        t = Tratamento()
+        data = t.retorna_arq('Dados comum')
+        for i in range(len(data)):
+            buff = list()
+            buff.append(int(data[i][0]))
+            buff.append(int(data[i][1]))
+            buff.append(int(data[i][2]))
+            buff.append(float(data[i][foco]))
+            aux1.append(buff)
+        
+        mat_n = t.normalizar_dados(aux1)
+        buff.clear()
+
+        for i in range(len(mat_n)):
+            buff = list()
+            try:
+                for j in range(5):
+                    buff.append(mat_n[i+j][0])
+                    buff.append(mat_n[i+j][1])
+                    buff.append(mat_n[i+j][2])
+                    buff.append(mat_n[i+j][3])
+                if len(buff) == 20:
+                    matriz.append(buff[:19])
+                    resultado.append(buff[19])
+            except IndexError:
+                pass
+        tam = floor(len(matriz)*(divi/100))
+        matriz_treinamento = list()
+        resultado_treinamento = list()
+        matriz_validacao = list()
+        resultado_validacao = list()
+
+        for i in range(len(matriz)):
+            if i <= tam:
+                matriz_treinamento.append(matriz[i])
+                resultado_treinamento.append(resultado[i])
+            else:
+                matriz_validacao.append(matriz[i])
+                resultado_validacao.append(resultado[i])   
+        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
+
+    def prepara_matriz2(self, local, divisao, indicadores, foco, normalizar): #Indicadores estão em forma de lista (no max 2 de 3) [3(chuva) e/ou 4(tmax) e/ou 5(tmin)]  || O foco vai ser qual indicador que o usuario quer que as máquinas façam o predict
+
+        matriz = list()
+        resultado = list()
+        arq = open(local)
+
+        for i in arq:
+            buff = list()
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            i = i.split(',') 
+            buff.append(int(i[2])) #dia
+            buff.append(int(i[1])) #mes
+            buff.append(int(i[0])) #ano
+            if indicadores != []:
+                for j in indicadores:
+                    buff.append(float(i[j]))
+            resultado.append(float(i[foco]))
+            matriz.append(buff) 
+        arq.close()
+
+        tam = floor(len(matriz)*(divisao/100))
+        matriz_treinamento = list()
+        resultado_treinamento = list()
+        matriz_validacao = list()
+        resultado_validacao = list()
+
+        if normalizar == 1:
+            resultado_n = self.normalizar(resultado)
+            matriz_n = self.normalizar(matriz)
+
+            for i in range(len(matriz)):
+                if i <= tam:
+                    matriz_treinamento.append(matriz_n[i])
+                    resultado_treinamento.append(resultado_n[i])
+                else:
+                    matriz_validacao.append(matriz_n[i])
+                    resultado_validacao.append(resultado_n[i])
+        else:
+            for i in range(len(matriz)):
+                if i <= tam:
+                    matriz_treinamento.append(matriz[i])
+                    resultado_treinamento.append(resultado[i])
+                else:
+                    matriz_validacao.append(matriz_n[i])
+                    resultado_validacao.append(resultado[i])
+
+        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
+
+            
+
+    def normalizar(self, data):
+
+        try: #Se for uma matriz (mais de uma coluna)
+            max_min = list()  #Lista de max e min de cada coluna
+            aux = list()
+            t = len(data[0])  #Obter a quantidade de colunas da "matriz"
+
+            for i in range(t): #Um laço começa pelas colunas e vai percorrendo as linhas
+                aux.clear()
+                for j in range(len(data)):
+                    aux.append(float(data[j][i]))
+                max_min.append(max(aux))  #Coloca o max e depois o min de cada columa
+                max_min.append(min(aux))
+
+            dadosn = list()
+
+            for i in range(len(data)):
+                cont = 0
+                buff = list()
+                for j in range(t):
+                    maior = max_min[cont]
+                    menor = max_min[cont + 1]
+                    dado = ((float(data[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
+                    buff.append(dado)
+                    cont = cont + 2
+                dadosn.append(buff)
+
+            
+                     
+        except TypeError: #Se for so um vetor (uma so coluna/linha)
+            dadosn = list()
+            maior = max(data)
+            menor = min(data)
+            for i in range(len(data)):
+                dado = ((float(data[i]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
+                dadosn.append(dado)
+
+        return dadosn
+
+class Tratamento:
+    global alvo
+    global vizinhaA
+    global vizinhaB
+    global vizinhaC
+    global download
+    alvo = vizinhaA = vizinhaB = vizinhaC = download = ''
+    def __init__(self):
+        self.alvo = alvo
+        self.vizinhaA = vizinhaA
+        self.vizinhaB = vizinhaB
+        self.vizinhaC = vizinhaC
+        self.download = download
+        
+        
+    # def __init__(self, alvo, vizinhaA, vizinhaB, vizinhaC, download):
+    def procura_colunas(self, a, b):
+
+        est = (str(b).split(' '))[2]
+        est = est.strip("]")
+        est = est.strip("'")
+        
+
+        if est[0] != 'A':
+            coluna_prec = 3
+            coluna_tmax = 4
+            coluna_tmin = 6    
+        else:
+            coluna_prec = 1
+            coluna_tmax = 4
+            coluna_tmin = 6
+            
+        
+        return coluna_prec, coluna_tmax, coluna_tmin
+    def get_data_trada(self): #! Funçao para retornar os dados tratados
+        diretorio = [self.alvo, self.vizinhaA, self.vizinhaB, self.vizinhaC]
+       
+        temp = [str(self.download) + "/alvo_limpa.txt", str(self.download) + "/vizinhaA_limpa.txt", str(self.download) + "/vizinhaB_limpa.txt", str(self.download) + "/vizinhaC_limpa.txt"]
+        
+        arq1 = open("end.txt", "w")
+        
+        arq1.write(str(self.download) + "/alvo_limpa.txt\n" + str(self.download) + "/vizinhaA_limpa.txt\n" + str(self.download) + "/vizinhaB_limpa.txt\n" + str(self.download) + "/vizinhaC_limpa.txt\n" + str(self.download) + '/dadoscomum.csv\n' + str(self.download) + '/buff.txt\n' + str(self.download) + '/Coordenadas.txt\n')
+        arq1.close()
+        
+        '''arq1 = open("end.txt", "w")
+        arq1.write(str(self.download) + "/alvo_limpa.txt\n" + str(self.download) + "/vizinhaA_limpa.txt\n" + str(self.download) + "/vizinhaB_limpa.txt\n" + str(self.download) + "/vizinhaC_limpa.txt")
+        arq1.close()'''
+        cont = 0
+        comum_alvo = comum_vizA = comum_vizB = comum_vizC = list()
+
+        for dir in diretorio:
+            aux = list()
+            with open(dir) as arq: #* Abrindo os arquivos .csv e armazenando numa lista
+                reader = csv.reader(arq, delimiter=';')
+                for line in reader:
+                    aux.append(line)
+            del aux[10][len(aux[10])-1]
+
+            cp, ctmax, ctmin = self.procura_colunas(aux[10], aux[1])
+
+            del aux[len(aux)-1]      #? Remove a ultima linha em branco do arquivo, da pra fazer isso manualmente, mas caso o usuario trabalhe com inumeros arquivos, remover a ultima linha de cada arquivo pode ser um trabalho massante 
+            del aux[0:11]            #? Remove o cabeçalho do arquivo .csv
+
+            colunas = [cp, ctmax, ctmin]
+            
+            buff = list()
+            
+            for i in range(len(aux)):
+                buff2 = list()
+                buff2.append(aux[i][0])
+                for j in colunas:
+                    buff2.append(aux[i][j])
+                   
+                buff.append(buff2)
+            
+            
+                
+            final = list()  #* Lista final 
+
+            for i in range(len(buff)): #* Removendo todas as linhas que possuem o valor null em seu parametros
+                condicao = 0
+                for j in range(1,4):
+                    if buff[i][j] == 'null' or buff[i][j] == '':
+                        condicao = 1
+
+                if condicao == 0:
+                    final.append(buff[i])
+                       
+
+            
+            for i in range(len(final)): #* Passando a data de AAAA-MM-DD para AAAA, MM, DD
+                aux.clear()
+                
+                for j in range(4):
+                    aux.append(final[i][j])
+                
+                data = aux[0]
+                data = str(data).split('-')
+
+                final[i].insert(0, int(data[0]))
+                final[i].insert(1, int(data[1]))
+                final[i].insert(2, int(data[2]))
+        
+                del final[i][3]
+           
+            new_arq = open(temp[cont], 'w')    #TODO: Salvando os dados em arquivos .txt
+            teste = list()
+            for i in final:
+                aux = list()
+                for j in range(len(i)):
+                    aux.append(str(i[j]).replace(',', '.'))
+                teste.append(aux)
+            for i in teste:
+                if cont == 0:
+                    comum_alvo.append(str(i).replace(' ', ''))
+                elif cont == 1:
+                    comum_vizA.append(str(i).replace(' ', ''))
+                elif cont == 2:
+                    comum_vizB.append(str(i).replace(' ', ''))
+                else:
+                    comum_vizC.append(str(i).replace(' ', ''))
+
+                i = str(i).strip("[")
+                i = str(i).strip("]")
+                i = i.replace(' ', '')
+                
+                
+                new_arq.write(str(i)+"\n")
+            new_arq.close()
+            cont += 1
+        self.get_coordinates()
+        
+        self.dadosc2()
+        
+    def dadosc(self):
+        #subprocess.call(r'E:\IC\Interface_Grafica\codes\dadosc.py', shell=True)
+        cid1, t1 = self.prepara_dadosc(str(self.download) + "/alvo_limpa.txt")
+        cid2, t2 = self.prepara_dadosc(str(self.download) + "/vizinhaA_limpa.txt")
+        cid3, t3 = self.prepara_dadosc(str(self.download) + "/vizinhaB_limpa.txt")
+        cid4, t4 = self.prepara_dadosc(str(self.download) + "/vizinhaC_limpa.txt")
+        
+        ano_ini = max([cid1[0][0], cid2[0][0], cid3[0][0], cid4[0][0]])
+        fim = min(len(cid1), len(cid2), len(cid3), len(cid4))
+        
+        for i in range(len(cid1)):
+            if ano_ini == cid1[i][0]:
+                ind1 = i
+                break
+        for i in range(len(cid2)):
+            if ano_ini == cid2[i][0]:
+                ind2 = i
+                break
+        for i in range(len(cid3)):
+            if ano_ini == cid3[i][0]:
+                ind3 = i
+                break
+        for i in range(len(cid4)):
+            if ano_ini == cid4[i][0]:
+                ind4 = i
+                break
+        
+        final = list()
+        aux = list()
+        '''
+        arq1 = open('end.txt', 'a')
+        arq1.write('\n' + str(self.download) + '/dadoscomum.csv\n' + str(self.download) + '/buff.txt\n' + '/Coordenadas.txt\n')
+        arq1.close()
+        '''
+        arq = open(str(self.download) + '/dadoscomum.txt', 'w')
+        arq_b = open(str(self.download) + '/buff.txt', 'w')
+        total = 0
+        ind1 = ind2 = ind3 = ind4 = 0
+        
+        for i in range(fim):
+            
+            ano1 = int(cid1[ind1+i][0])
+            mes1 = int(cid1[ind1+i][1])
+            dia1 = int(cid1[ind1+i][2])
+            cond1 = 0
+            for j in range(fim):
+                ano2 = int(cid2[ind2+j][0])
+                mes2 = int(cid2[ind2+j][1])
+                dia2 = int(cid2[ind2+j][2])
+                #print("{} {} {}  ||  {} {} {}".format(ano1, mes1, dia1, ano2, mes2, dia2))
+                
+                if (ano1 == ano2) and (mes1 == mes2) and (dia1 == dia2):
+                    
+                    for k in range(fim):
+                        ano3 = int(cid3[ind3+k][0])
+                        mes3 = int(cid3[ind3+k][1])
+                        dia3 = int(cid3[ind3+k][2]) 
+                        
+                        if (ano2 == ano3) and (mes2 == mes3) and (dia2 == dia3):
+                                
+                                
+                                for z in range(fim):
+                                    ano4 = int(cid4[ind4+z][0])
+                                    mes4 = int(cid4[ind4+z][1])
+                                    dia4 = int(cid4[ind4+z][2])
+                                    
+                                    if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
+                                        
+                                        aux.clear()
+                                        
+                                        """  -> Adicionando os dados numa lista <-  """
+                                        buff = ''   
+                                        buff = str(ano1) + " " + str(mes1) + " " + str(dia1) + " " + cid1[ind1+i][3] + " " + cid1[ind1+i][4] + " " + cid1[ind1+i][5] + " " + cid2[ind2+j][3] + " " + cid2[ind2+j][4] + " " + cid2[ind2+j][5] + " " + cid3[ind3+k][3] + " " + cid3[ind3+k][4] + " " + cid3[ind3+k][5] + " " + cid4[ind4+z][3] + " " + cid4[ind4+z][4] + " " + cid4[ind4+z][5]  
+                                        buff = str(buff).split()
+                                        final.append(buff)
+                                        
+                                        """  -> Adicinando os dados num arquivo .csv <-  """
+                                        buff = ''
+                                        buff = str(ano1) + ";" + str(mes1) + ";" + str(dia1) + ";" + cid1[ind1+i][3] + ";" + cid1[ind1+i][4] + ";" + cid1[ind1+i][5] + ";" + cid2[ind2+j][3] + ";" + cid2[ind2+j][4] + ";" + cid2[ind2+j][5] + ";" + cid3[ind3+k][3] + ";" + cid3[ind3+k][4] + ";" + cid3[ind3+k][5] + ";" + cid4[ind4+z][3] + ";" + cid4[ind4+z][4] + ";" + cid4[ind4+z][5] + ";\n"
+                                        
+                                        arq.write(buff)
+                                        total += 1
+                                        cond1 = 1
+                                        break
+                                    
+                                    
+                                
+                        if (cond1 == 1):
+                            break
+                
+                if(cond1 == 1):
+                    break
+        arq_b.write(str(total) + " " + str(t1) + " " + str(t2) + " " + str(t3) + " " + str(t4))
+        arq.close()
+        arq_b.close()
+        
+    def dadosc2(self):
+        alv, t1 = self.prepara_dadosc(str(self.download) + "/alvo_limpa.txt")
+        vizA, t2 = self.prepara_dadosc(str(self.download) + "/vizinhaA_limpa.txt")
+        vizB, t3 = self.prepara_dadosc(str(self.download) + "/vizinhaB_limpa.txt")
+        vizC, t4 = self.prepara_dadosc(str(self.download) + "/vizinhaC_limpa.txt")
+        comeca = max(alv[0][0], vizA[0][0], vizB[0][0], vizC[0][0])
+
+        ind1 = ind2 = ind3 = ind4 = 0
+        for i in range(len(alv)):
+            if int(comeca )== int(alv[i][0]):
+                ind1 = i
+                break
+        for i in range(len(vizA)):
+            if int(comeca)== int(vizA[i][0]):
+                ind2 = i
+                break
+        for i in range(len(vizA)):
+            if int(comeca)== int(vizB[i][0]):
+                ind3 = i
+                break
+        for i in range(len(vizA)):
+            if int(comeca)== int(vizC[i][0]):
+                ind4 = i
+                break
+        arq = open(str(self.download) + '/dadoscomum.csv', 'w')
+        arq_b = open(str(self.download) + '/buff.txt', 'w')
+        comum =0
+        for i in range(ind1, len(alv)):
+            try:
+                ano1 = alv[i][0]
+                mes1 = alv[i][1]
+                dia1 = alv[i][2]
+                for j in range(ind2, len(vizA)):
+                    ano2 = vizA[j][0]
+                    mes2 = vizA[j][1]
+                    dia2 = vizA[j][2]
+                    if (ano1 == ano2) and (mes1 == mes2) and (dia1 == dia2):
+                        for k in range(ind3, len(vizB)):
+                            ano3 = vizB[k][0]
+                            mes3 = vizB[k][1]
+                            dia3 = vizB[k][2]
+                            if (ano2 == ano3) and (mes2 == mes3) and (dia2 == dia3):
+                                for l in range(ind4, len(vizC)):
+                                    ano4 = vizC[l][0]
+                                    mes4 = vizC[l][1]
+                                    dia4 = vizC[l][2]
+                                    if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
+                                        #print("\nAlvo:{}\nVizinhaA:{}\nVizinhaB:{}\nVizinhaC:{}\n".format(type(alv[i]),type(vizA[j]), type(vizB[k]), type(vizC[l])))
+                                        t_alv = str(alv[i]).strip('[')
+                                        t_alv = t_alv.strip(']')
+                                        t_alv = t_alv.replace(' ', '')
+                                        
+                                        del vizA[j][:3]
+                                        t_vizA = str(vizA[j]).strip('[')
+                                        t_vizA = t_vizA.strip(']')
+                                        t_vizA = t_vizA.replace(' ', '')
+                                        
+                                        del vizB[k][:3]
+                                        t_vizB = str(vizB[k]).strip('[')
+                                        t_vizB = t_vizB.strip(']')
+                                        t_vizB = t_vizB.replace(' ', '')
+                                        
+                                        del vizC[l][:3]
+                                        t_vizC = str(vizC[l]).strip('[')
+                                        t_vizC = t_vizC.strip(']')
+                                        t_vizC = t_vizC.replace(' ', '')
+
+                                        texto = t_alv + ',' + t_vizA + ',' + t_vizB + ',' + t_vizC
+                                        texto = texto.replace(',', ';')
+                                        
+                                        #texto  = str(ano1) + ";" + str(mes1) + ";" + str(dia1) + ";" + alv[ind1+i][3] + ";" + alv[ind1+i][4] + ";" + alv[ind1+i][5] + ";" + vizA[ind2+j][3] + ";" + vizA[ind2+j][4] + ";" + vizA[ind2+j][5] + ";" + vizB[ind3+k][3] + ";" + vizB[ind3+k][4] + ";" + vizB[ind3+k][5] + ";" + vizC[ind4+l][3] + ";" + vizC[ind4+l][4] + ";" + vizC[ind4+l][5] + ";\n"                           
+                                        
+                                        arq.write(texto + ';\n')
+                                        comum += 1    
+            except IndexError:
+                pass
+        arq_b.write(str(comum) + " " + str(t1) + " " + str(t2) + " " + str(t3) + " " + str(t4))
+        arq.close()
+        arq_b.close()
+
+    def prepara_dadosc(self, dir):
+        arq = open(dir)
+        lista = list()
+
+        t=0
+        for i in arq:
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            i = i.split(',')    
+            lista.append(i)
+            
+            t += 1
+        
+        return lista, t
+
+
+    def retorna_arq(self, op):
+        arq = open('end.txt') 
+        a = arq.readlines()
+        arq.close()
+        if op == 'Cidade alvo':
+            di = a[0].replace("\n", '')
+        elif op == 'Vizinha A':
+            di = a[1].replace("\n", '')
+        elif op == 'Vizinha B':
+            di = a[2].replace("\n", '')
+        elif op == 'Vizinha C':
+            di = a[3].replace("\n", '')
+        elif op == 'Dados comum':
+            di = a[4].replace("\n", '')
+            
+        
+
+        
+        lista = list()
+        
+        arq = open(di)
+        
+        for i in arq:
+            
+            i = i.replace('\n', '')
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            
+            if op == 'Dados comum':
+                i = i.split(';')
+                del i[len(i)-1]
+                
+            else:
+                i = i.split(',')  
+            lista.append(i)
+        arq.close()
+        
+        return lista
+    
+    def get_range(self, op):
+        controle = 0
+        arq = open('end.txt') 
+        a = arq.readlines()
+        arq.close()
+        if op == 'Cidade alvo':
+            di = a[0].replace("\n", '')
+        elif op == 'Vizinha A':
+            di = a[1].replace("\n", '')
+        elif op == 'Vizinha B':
+            di = a[2].replace("\n", '')
+        elif op == 'Vizinha C':
+            di = a[3].replace("\n", '')
+        elif op == 'Dados comum':
+            di = a[4].replace("\n", '')
+            controle = 1
+            
+        arq = open(di)
+        aux = list()
+
+        for i in arq:
+            i = i.strip()
+            i = i.replace("'",'')
+            i = i.replace(" ",'')
+            if controle == 1:
+                i = i.split(';')
+                del i[len(i)-1]
+            else:
+                i = i.split(',')
+            aux.append(int(i[0]))
+        arq.close()
+        
+        anos = list()
+        
+        buff = aux[0]
+    
+        anos.append(buff)
+        
+        for i in range(1,len(aux)): 
+            try:
+                if aux[i-1] != aux[i]:
+                    buff = aux[i]
+                    anos.append(buff)
+            except IndexError:
+                pass
+        return anos
+
+    def get_qtd(self):
+        arq = open('end.txt') 
+        a = arq.readlines()
+        arq = open(a[5].replace("\n", ''))
+        
+        a = arq.readline()
+        a = a.split()
+        ut = int(a[0])
+        Tar = int(a[1])
+        vA = int(a[2])
+        vB = int(a[3])
+        vC = int(a[4])
+        arq.close()
+        return ut, Tar,vA, vB, vC
+
+    def normalizar_dados(self, mat):
+        max_min = list()
+        aux = list()
+        t = len(mat[0])
+        for i in range(t):
+            aux.clear()
+            for j in range(len(mat)):
+                aux.append(mat[j][i])
+            max_min.append(max(aux))
+            max_min.append(min(aux))
+
+        dadosn =list()
+        
+    
+        for i in range(len(mat)):
+            cont = 0
+            buff = list()
+            for j in range(t):
+                if cont <= 36:
+                    maior = max_min[cont]
+                    menor = max_min[cont + 1]
+                    dado = ((float(mat[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
+                    buff.append(dado)
+                    cont = cont + 2
+            dadosn.append(buff)
+        
+        
+        return dadosn
+
+    def get_coordinates(self): # ? Função para obter as coordenadas de cada cidade
+        coordenadas = list()
+        aux = list()
+        arq1 = open('end.txt') 
+        a = arq1.readlines()
+        locais = [self.alvo, self.vizinhaA, self.vizinhaB, self.vizinhaC]
+        
+        for i in locais:
+            aux.clear()
+            with open(i) as arq:
+                reader = csv.reader(arq)
+                for j in reader:
+                    aux.append(j)
+            arq.close()
+            del aux[10:]
+
+            estacao = str(aux[0]).split(':')
+            estacao = estacao[1].strip(']')
+            estacao = (estacao.strip("'")).strip()
+
+            latitude = str(aux[2]).split(':')
+            latitude = latitude[1].strip(']')
+            latitude = (latitude.strip("'")).strip()
+
+            longitude = str(aux[3]).split(':')
+            longitude = longitude[1].strip(']')
+            longitude = (longitude.strip("'")).strip()
+
+            altitude = str(aux[4]).split(':')
+            altitude = altitude[1].strip(']')
+            altitude = (altitude.strip("'")).strip()
+
+            coordenadas.append(estacao)
+            coordenadas.append(latitude)
+            coordenadas.append(longitude)
+            coordenadas.append(altitude)
+        
+        arq = open(a[6].replace("\n", ''), 'w')
+        for i in coordenadas:
+            arq.write(i)
+            arq.write('\n')
+        arq1.close() 
+        arq.close()    
+    
+    def get_local_cord(self):
+        arq = open('end.txt') 
+        a = arq.readlines()
+        aux = a[6].replace("\n", '')
+        return aux
 
 class Triangulaction:
     def __init__(self):
         self.coordenadas = list()
-
-        local = r'E:\IC\Interface_Grafica\Dados_verificacao\Coordenadas.txt'
+        cod_trat = Tratamento()
+        local = cod_trat.get_local_cord()
         arq = open(local)
         aux = list()
         for i in arq:
@@ -79,7 +1685,8 @@ class Triangulaction:
         d1 = round(haversine(self.tupla_tg, self.tupla_cA, Unit.KILOMETERS), 4)
         d2 = round(haversine(self.tupla_tg, self.tupla_cB, Unit.KILOMETERS), 4)
         d3 = round(haversine(self.tupla_tg, self.tupla_cC, Unit.KILOMETERS), 4)
-        
+        media = (d1 + d2 + d3) / 3
+        print("Cidade A: {}km  ||  Cidade B: {}km  || Cidade C: {}km  || Média: {}km".format(d1,d2,d3, media))
         self.d = [d1, d2, d3]
     
     def idw(self, foco): # Todo: 1 - Precipitação, 2 - Temperatura Máxima, 3 - Temperatura Miníma
@@ -504,7 +2111,7 @@ class Triangulaction:
         self.onr_y = list()
         cont_cor = 0
         resultado = list()
-
+        print(data[0])
         for i in range(len(data)):
             try:
                 if data[i][1] != data[i+1][1]:
@@ -575,10 +2182,12 @@ class Triangulaction:
  
     def calcula_erros(self, real, aprox):
         t = Treinamento()
-        
+        '''
         exato = t.normalizar(real)
         aproximado = t.normalizar(aprox)
-             
+        ''' 
+        exato = real  
+        aproximado = aprox  
         soma_ea = 0
         soma_er = 0
         for i in range(len(exato)):
@@ -592,1429 +2201,13 @@ class Triangulaction:
         erro_rela = soma_er / len(exato)
 
         return erro_abs, erro_rela
-
-class Treinamento:
-    def ArvoreDecisao(self, cidade, indic, divisao, cri, spli, max_d, min_s, max_f,  max_l, n_testes, min_sam_spl, min_wei, minim, ccp, save):
-        tempo_inicial = time.time()
-        if indic == 3:
-            indicador = 'Precipitação'
-        elif indic == 4:
-            indicador = 'Temperatura máxima'
-        else:
-            indicador = 'Temperatura miníma'
-
-
-        param = [cri, spli, max_d, min_s, max_f,  max_l, min_sam_spl, min_wei, minim, ccp]
-        nome_p = ['criterion: ', 'splitter: ', 'max_depth: ', 'min_samples_leaf: ', 'max_features: ', 'max_leaf_nodes: ', 'min_samples_split: ', 'min_weight_fraction_leaf: ', 'min_impurity_decrease: ', 'ccp_alpha: ']
-        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\ArvoreD_comp.txt', 'a')
-
-        arq.write("-------------------------------------------------------------\n")
-        arq.write("---- Erros Obtidos a partir da ML Arvore de Decisão ----\n\n")
-        hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
-        arq.write("Horário dos teste: " + hora + "\n")
-        arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
-        arq.write("Parâmetros usados:\n")
-        for i in range(len(param)):
-            arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
-        
-        arq.write("\n\n---- Resultados Obtidos ----\n\n")
-
-
-        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
-        
-        soma_er_nteste = 0 #* Soma dos erros relativos dos n testes
-        soma_ea_nteste = 0 #* Soma dos erros absolutos dos n testes
-        
-        
-       
-        eixo_y_exato = list()
-        eixo_y_predict = list()
-        eixo_x = list()
-        cont = 1
-        cont2 = 1
-        for j in range(n_testes):
-            aprendiz = tree.DecisionTreeRegressor(criterion=cri, splitter=spli, max_depth=max_d, min_samples_leaf=min_s, max_features=max_f, max_leaf_nodes=max_l, min_samples_split=min_sam_spl, min_weight_fraction_leaf=min_wei, min_impurity_decrease=minim, ccp_alpha=ccp)
-            aprendiz = aprendiz.fit(m_trei, r_trei)
-
-            soma_ea = 0 #* Soma dos erros absolutos
-            soma_er = 0 #* Soma dos erros relativos
-
-            for i in range(len(m_vali)):
-                valor_exato = r_vali[i]
-                valor_aprox = aprendiz.predict([m_vali[i]])[0]
-                if j != (n_testes):
-                    eixo_y_exato.append(valor_exato)
-                    eixo_y_predict.append(valor_aprox)
-                    eixo_x.append(cont)
-                    cont += 1
-                
-                Erro_absoluto = valor_exato - valor_aprox
-
-                if Erro_absoluto < 0:
-                    Erro_absoluto = Erro_absoluto * (-1)
-                
-                Erro_relativo = (Erro_absoluto/valor_exato)
-
-                soma_ea = soma_ea + Erro_absoluto
-                soma_er = soma_er + Erro_relativo
-            
-            soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
-            soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
-            
-            arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
-            cont2 += 1
-
-        pontuacao = round((((soma_er_nteste/n_testes)*100) - 100)* (-1),2)
-        erro = (eixo_y_exato[i] - eixo_y_predict[i])
-        if erro < 0:
-            erro = erro * (-1)
-                
-
-        maior_ea = erro
-        exat_maior = eixo_y_exato[0]
-        pre_maior = eixo_y_predict[0]
-
-        menor_ea = erro
-        exat_menor = eixo_y_exato[0]
-        pre_menor = eixo_y_predict[0]
-
-        for i in range(1, len(eixo_x)):
-            erro = (eixo_y_exato[i] - eixo_y_predict[i])
-            if erro < 0:
-                erro = erro * (-1)
-
-            if erro > maior_ea:
-                maior_ea = erro
-                exat_maior = eixo_y_exato[i]
-                pre_maior = eixo_y_predict[i]
-            
-            if (erro) < menor_ea and (erro) > 0:
-                menor_ea = erro
-                exat_menor = eixo_y_exato[i]
-                pre_menor = eixo_y_predict[i]
-        
-        media_ea = soma_ea_nteste/n_testes
-        media_er = soma_er_nteste/n_testes
-
-        if save == 1:
-            pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_ad.sav', 'wb'))
-
-
-        arq.write("\nmedia do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
-        tempo_final = time.time()
-        tempo_total = str(tempo_final - tempo_inicial)
-        arq.write("\nTempo de execução: " + tempo_total + " s\n")
-        arq.write("-------------------------------------------------------------\n\n")
-        arq.close()
-        return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
-          
-    def RedeNeural(self, cidade, indic, divisao, n_teste, activ, solv, alp, batc, learnrat, learnratini, powrt, maxiter,shuf, tol_v, verb, warmst, moment, nestr, early, valid, b1, b2, niter, maxf, save):
-        tempo_inicial = time.time()
-        if indic == 3:
-            indicador = 'Precipitação'
-        elif indic == 4:
-            indicador = 'Temperatura máxima'
-        else:
-            indicador = 'Temperatura miníma'
-
-        param = [activ, solv, alp, batc, learnrat, learnratini, powrt, maxiter,shuf, tol_v, verb, warmst, moment, nestr, early, valid, b1, b2, niter, maxf]
-        nome_p = ['activation: ', 'solver: ', 'alpha: ', 'batch_size: ', 'learning_rate: ', 'learning_rate_init: ', 'power_t: ', 'max_iter: ', 'shuffle: ', 'tol: ', 'verbose: ', 'warm_start: ', 'momentum: ', 'nesterovs_momentum: ', 'early_stopping: ', 'validation_fraction: ', 'beta_1: ', 'beta_1: ', 'n_iter_no_change: ', 'max_fun: ']
-        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\RedeNeural_comp.txt', 'a')
-        arq.write("-------------------------------------------------------------\n")
-        arq.write("---- Erros Obtidos a partir da ML Redes Neurais ----\n\n")
-        hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
-        arq.write("Horário dos teste: " + hora + "\n")
-        arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
-        arq.write("Parâmetros usados:\n")
-        for i in range(len(param)):
-            arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
-        
-        arq.write("\n\n---- Resultados Obtidos ----\n\n")       
-        
-        
-        m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
-        soma_er_nteste = 0
-        soma_ea_nteste = 0
-
-        eixo_y_exato = list()
-        eixo_y_predict = list()
-        eixo_x = list()
-        cont = 1
-        cont2 = 1
-
-        for j in range(n_teste):
-            aprendiz = MLPRegressor(activation=activ, solver=solv, alpha=alp, batch_size=batc, learning_rate=learnrat, learning_rate_init=learnratini, power_t=powrt, max_iter=maxiter, shuffle=shuf, tol=tol_v, verbose=verb, warm_start=warmst, momentum=moment, nesterovs_momentum=nestr, early_stopping=early, validation_fraction=valid, beta_1=b1, beta_2=b2,n_iter_no_change=niter,max_fun=maxf)
-            aprendiz = aprendiz.fit(m_trei, r_trei)
-
-            soma_ea = 0
-            soma_er = 0
-
-            for i in range(len(m_vali)):
-                valor_exato = r_vali[i]
-                valor_aprox = aprendiz.predict([m_vali[i]])[0]
-
-                if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
-                    eixo_y_exato.append(valor_exato)
-                    eixo_y_predict.append(valor_aprox)
-                    eixo_x.append(cont)
-                    cont += 1
-            
-                Erro_absoluto = abs(valor_exato - valor_aprox)
-                Erro_relativo = Erro_absoluto/valor_exato
-
-                soma_ea = soma_ea + Erro_absoluto
-                soma_er = soma_er + Erro_relativo
-
-            soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
-            soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
-            
-            arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
-            cont2 += 1
-        pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
-        erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
-        
-
-        maior_ea = erro
-        exat_maior = eixo_y_exato[0]
-        pre_maior = eixo_y_predict[0]
-
-        menor_ea = erro
-        exat_menor = eixo_y_exato[0]
-        pre_menor = eixo_y_predict[0]
-
-        for i in range(1, len(eixo_x)):
-            erro = (eixo_y_exato[i] - eixo_y_predict[i])
-            if erro < 0:
-                erro = erro * (-1)
-
-            if erro > maior_ea:
-                maior_ea = erro
-                exat_maior = eixo_y_exato[i]
-                pre_maior = eixo_y_predict[i]
-                
-            if (erro) < menor_ea and (erro) > 0:
-                menor_ea = erro
-                exat_menor = eixo_y_exato[i]
-                pre_menor = eixo_y_predict[i]
-            
-        media_ea = soma_ea_nteste/n_teste
-        media_er = soma_er_nteste/n_teste
-
-        if save == 1:
-            pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_rn.sav', 'wb'))
-
-        arq.write("\nmedia do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
-        tempo_final = time.time()
-        tempo_total = str(tempo_final - tempo_inicial)
-        arq.write("\nTempo de execução: " + tempo_total + " s\n")
-        arq.write("-------------------------------------------------------------\n\n")
-        arq.close()
-        return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
-            
-    def KNeighbors(self, cidade, indic, divisao, n_teste, n_nei, algor, leaf_s, p_val, n_jo, save):
-            m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
-            soma_er_nteste = 0
-            soma_ea_nteste = 0
-
-            eixo_y_exato = list()
-            eixo_y_predict = list()
-            eixo_x = list()
-            cont = 1
-            cont2 = 1
-
-            if indic == 3:
-                indicador = 'Precipitação'
-            elif indic == 4:
-                indicador = 'Temperatura máxima'
-            else:
-                indicador = 'Temperatura miníma'
-
-            param = [n_nei, algor, leaf_s, p_val, n_jo]
-            nome_p = ['n_neighbors: ', 'algorithm: ', 'leaf_size: ', 'p: ', 'n_jobs: ']
-            arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\KNeighbors_comp.txt', 'a')
-
-            arq.write("-------------------------------------------------------------\n")
-            arq.write("---- Erros Obtidos a partir da ML KNeighbors ----\n\n")
-            hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
-            arq.write("Horário dos teste: " + hora + "\n")
-            arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
-            arq.write("Parâmetros usados:\n")
-            for i in range(len(param)):
-                arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
-            
-            arq.write("\n\n---- Resultados Obtidos ----\n\n")
-
-            for j in range(n_teste):
-                aprendiz = KNeighborsRegressor(n_neighbors=n_nei, algorithm=algor, leaf_size=leaf_s, p=p_val, n_jobs=n_jo)
-                aprendiz = aprendiz.fit(m_trei, r_trei)
-
-                soma_ea = 0
-                soma_er = 0
-
-                for i in range(len(m_vali)):
-                    valor_exato = r_vali[i]
-                    valor_aprox = aprendiz.predict([m_vali[i]])[0]
-
-                    if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
-                        eixo_y_exato.append(valor_exato)
-                        eixo_y_predict.append(valor_aprox)
-                        eixo_x.append(cont)
-                        cont += 1
-                
-                    Erro_absoluto = abs(valor_exato - valor_aprox)
-                    Erro_relativo = Erro_absoluto/valor_exato
-
-                    soma_ea = soma_ea + Erro_absoluto
-                    soma_er = soma_er + Erro_relativo
-
-                soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
-                soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
-
-                arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
-                cont2 += 1
-
-            pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
-            erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
-            
-
-            maior_ea = erro
-            exat_maior = eixo_y_exato[0]
-            pre_maior = eixo_y_predict[0]
-
-            menor_ea = erro
-            exat_menor = eixo_y_exato[0]
-            pre_menor = eixo_y_predict[0]
-
-            for i in range(1, len(eixo_x)):
-                erro = (eixo_y_exato[i] - eixo_y_predict[i])
-                if erro < 0:
-                    erro = erro * (-1)
-
-                if erro > maior_ea:
-                    maior_ea = erro
-                    exat_maior = eixo_y_exato[i]
-                    pre_maior = eixo_y_predict[i]
-                    
-                if (erro) < menor_ea and (erro) > 0:
-                    menor_ea = erro
-                    exat_menor = eixo_y_exato[i]
-                    pre_menor = eixo_y_predict[i]
-                
-            media_ea = soma_ea_nteste/n_teste
-            media_er = soma_er_nteste/n_teste
-
-            if save == 1:
-                pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_kn.sav', 'wb'))
-
-            arq.write("media do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
-            arq.write("-------------------------------------------------------------\n\n")
-            arq.close()
-            return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
-
-    def SVR(self, cidade, indic, divisao, n_teste, ker, degr, gam, coe, t, c, eps, shr, cache, verb, maxi, save):
-                m_trei, r_trei, m_vali, r_vali = self.prepara_matriz(cidade, divisao, indic, 0)
-                soma_er_nteste = 0
-                soma_ea_nteste = 0
-
-                eixo_y_exato = list()
-                eixo_y_predict = list()
-                eixo_x = list()
-                cont = 1
-                cont2 = 1
-
-                if indic == 3:
-                    indicador = 'Precipitação'
-                elif indic == 4:
-                    indicador = 'Temperatura máxima'
-                else:
-                    indicador = 'Temperatura miníma'
-                param = [ker, degr, gam, coe, t, c, eps, shr, cache, verb, maxi]
-                nome_p = ['kernel: ', 'degree: ', 'gamma: ', 'coef0: ', 'tol: ', 'C: ', 'epsilon: ', 'shrinking: ', 'cache_size: ', 'verbose: ', 'max_iter: ']
-                arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\SupportVectorMachine_comp.txt', 'a')
-
-                arq.write("-------------------------------------------------------------\n")
-                arq.write("---- Erros Obtidos a partir da ML Support Vector Machine ----\n\n")
-                hora = str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
-                arq.write("Horário dos teste: " + hora + "\n")
-                arq.write("Porção para treinamento: " + str(divisao) + '%\nIndicador climático: ' + indicador + '\n\n')
-                arq.write("Parâmetros usados:\n")
-                for i in range(len(param)):
-                    arq.write("  -> " + nome_p[i] + str(param[i]) + "\n")
-                
-                arq.write("\n\n---- Resultados Obtidos ----\n\n")
-
-
-                for j in range(n_teste):
-                    aprendiz = SVR(kernel=ker, degree=degr, gamma=gam, coef0=coe, tol=t, C=c, epsilon=eps, shrinking=shr, cache_size=cache, verbose=verb, max_iter=maxi)
-                    aprendiz = aprendiz.fit(m_trei, r_trei)
-
-                    soma_ea = 0
-                    soma_er = 0
-
-                    for i in range(len(m_vali)):
-                        valor_exato = r_vali[i]
-                        valor_aprox = aprendiz.predict([m_vali[i]])[0]
-
-                        if j != (n_teste): #Quando chegar no final, adicionar todos os valores finais em suas respctivas variaveis
-                            eixo_y_exato.append(valor_exato)
-                            eixo_y_predict.append(valor_aprox)
-                            eixo_x.append(cont)
-                            cont += 1
-                    
-                        Erro_absoluto = abs(valor_exato - valor_aprox)
-                        Erro_relativo = Erro_absoluto/valor_exato
-
-                        soma_ea = soma_ea + Erro_absoluto
-                        soma_er = soma_er + Erro_relativo
-
-                    soma_ea_nteste = soma_ea_nteste + soma_ea/len(m_vali)
-                    soma_er_nteste = soma_er_nteste + soma_er/len(m_vali)
-
-                    arq.write("Teste n° " + str(cont2) + " -> Erro Relativo: " + str(round((soma_er/len(m_vali)), 6)) + " || Erro Absoluto: " + str(round((soma_ea/len(m_vali)), 6)) + "\n")
-                    cont2 += 1
-
-                pontuacao = round((((soma_er_nteste/n_teste)*100) - 100)* (-1),2)
-                erro = abs(eixo_y_exato[i] - eixo_y_predict[i])
-                
-
-                maior_ea = erro
-                exat_maior = eixo_y_exato[0]
-                pre_maior = eixo_y_predict[0]
-
-                menor_ea = erro
-                exat_menor = eixo_y_exato[0]
-                pre_menor = eixo_y_predict[0]
-
-                for i in range(1, len(eixo_x)):
-                    erro = (eixo_y_exato[i] - eixo_y_predict[i])
-                    if erro < 0:
-                        erro = erro * (-1)
-
-                    if erro > maior_ea:
-                        maior_ea = erro
-                        exat_maior = eixo_y_exato[i]
-                        pre_maior = eixo_y_predict[i]
-                        
-                    if (erro) < menor_ea and (erro) > 0:
-                        menor_ea = erro
-                        exat_menor = eixo_y_exato[i]
-                        pre_menor = eixo_y_predict[i]
-                    
-                media_ea = soma_ea_nteste/n_teste
-                media_er = soma_er_nteste/n_teste
-
-                if save == 1:
-                    pickle.dump(aprendiz, open(r'E:\IC\Interface_Grafica\Dados_verificacao\modelo_svr.sav', 'wb'))
-                arq.write("media do Erro absoluto: " + str(media_ea) + " || média do Erro relativo: " + str(media_er) + "\n")
-                arq.write("-------------------------------------------------------------\n\n")
-                arq.close()
-                return pontuacao, media_ea, media_er, maior_ea, exat_maior, pre_maior, menor_ea, exat_menor, pre_menor, eixo_y_exato, eixo_y_predict, eixo_x
-
-    def prepara_matriz(self, local, divi, indicador, qtd_in):
-        norm = Tratamento()
-
-        matriz = list()
-        aux1 = list()
-        resultado = list()
-        arq = open(local)
-        for i in arq:
-            buff = list()
-            i = i.strip()
-            i = i.replace("'",'')
-            i = i.replace(" ",'')
-            i = i.split(',') 
-            buff.append(int(i[2])) #dia
-            buff.append(int(i[1])) #mes
-            buff.append(int(i[0])) #ano
-            buff.append(float(i[indicador])) #Indicador selecionado pelo usuário
-            aux1.append(buff)
-        mat_n = norm.normalizar_dados(aux1)
-
-
-        buff.clear()
-        
-        for i in range(len(mat_n)):
-            buff = list()
-            try:
-                for j in range(5):
-                    buff.append(mat_n[i+j][0])
-                    buff.append(mat_n[i+j][1])
-                    buff.append(mat_n[i+j][2])
-                    buff.append(mat_n[i+j][3])
-                if len(buff) == 20:
-                    matriz.append(buff[:19])
-                    resultado.append(buff[19])
-            except IndexError:
-                pass
-        arq.close()
-        tam = floor(len(matriz)*(divi/100))
-        matriz_treinamento = list()
-        resultado_treinamento = list()
-        matriz_validacao = list()
-        resultado_validacao = list()
-
-        for i in range(len(matriz)):
-            if i <= tam:
-                matriz_treinamento.append(matriz[i])
-                resultado_treinamento.append(resultado[i])
-            else:
-                matriz_validacao.append(matriz[i])
-                resultado_validacao.append(resultado[i])
-        mat_trein_n = list()
-        res_tre_n = list()
-        mat_val_n = list()
-        res_val_n = list()
-        '''if indicador == 3:
-            mat_trein_n = norm.normalizar_dados(matriz_treinamento)
-            res_tre_n = norm.normalizar_dados(resultado_treinamento)
-            mat_val_n = norm.normalizar_dados(matriz_validacao)
-            res_val_n = norm.normalizar_dados(resultado_validacao)
-            return mat_trein_n, res_tre_n, mat_val_n, res_val_n
-        else:'''
-        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
-
-
-
-    def prepara_matriz2(self, local, divisao, indicadores, foco, normalizar): #Indicadores estão em forma de lista (no max 2 de 3) [3(chuva) e/ou 4(tmax) e/ou 5(tmin)]  || O foco vai ser qual indicador que o usuario quer que as máquinas façam o predict
-
-        matriz = list()
-        resultado = list()
-        arq = open(local)
-
-        for i in arq:
-            buff = list()
-            i = i.strip()
-            i = i.replace("'",'')
-            i = i.replace(" ",'')
-            i = i.split(',') 
-            buff.append(int(i[2])) #dia
-            buff.append(int(i[1])) #mes
-            buff.append(int(i[0])) #ano
-            if indicadores != []:
-                for j in indicadores:
-                    buff.append(float(i[j]))
-            resultado.append(float(i[foco]))
-            matriz.append(buff) 
-        arq.close()
-
-        tam = floor(len(matriz)*(divisao/100))
-        matriz_treinamento = list()
-        resultado_treinamento = list()
-        matriz_validacao = list()
-        resultado_validacao = list()
-
-        if normalizar == 1:
-            resultado_n = self.normalizar(resultado)
-            matriz_n = self.normalizar(matriz)
-
-            for i in range(len(matriz)):
-                if i <= tam:
-                    matriz_treinamento.append(matriz_n[i])
-                    resultado_treinamento.append(resultado_n[i])
-                else:
-                    matriz_validacao.append(matriz_n[i])
-                    resultado_validacao.append(resultado_n[i])
-        else:
-            for i in range(len(matriz)):
-                if i <= tam:
-                    matriz_treinamento.append(matriz[i])
-                    resultado_treinamento.append(resultado[i])
-                else:
-                    matriz_validacao.append(matriz_n[i])
-                    resultado_validacao.append(resultado[i])
-
-        return matriz_treinamento, resultado_treinamento, matriz_validacao, resultado_validacao 
-
-            
-
-    def normalizar(self, data):
-
-        try: #Se for uma matriz (mais de uma coluna)
-            max_min = list()  #Lista de max e min de cada coluna
-            aux = list()
-            t = len(data[0])  #Obter a quantidade de colunas da "matriz"
-
-            for i in range(t): #Um laço começa pelas colunas e vai percorrendo as linhas
-                aux.clear()
-                for j in range(len(data)):
-                    aux.append(float(data[j][i]))
-                max_min.append(max(aux))  #Coloca o max e depois o min de cada columa
-                max_min.append(min(aux))
-
-            dadosn = list()
-
-            for i in range(len(data)):
-                cont = 0
-                buff = list()
-                for j in range(t):
-                    maior = max_min[cont]
-                    menor = max_min[cont + 1]
-                    dado = ((float(data[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
-                    buff.append(dado)
-                    cont = cont + 2
-                dadosn.append(buff)
-
-            
-                     
-        except TypeError: #Se for so um vetor (uma so coluna/linha)
-            dadosn = list()
-            maior = max(data)
-            menor = min(data)
-            for i in range(len(data)):
-                dado = ((float(data[i]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
-                dadosn.append(dado)
-
-        return dadosn
-
-class MetaL:
-    def prepara_input(self, indicador, janela):
-        if indicador == 1:
-            foco = 3
-        elif indicador == 2:
-            foco = 4
-        else: 
-            foco = 5
-
-        trat = Tratamento()
-        dt = trat.retorna_arq('Dados comum')
-
-        mat = list()
-        for i in range(len(dt)): #Vai fazer uma matriz com ano mes dia foco
-            aux = list()
-            aux.append(float(dt[i][0]))
-            aux.append(float(dt[i][1]))
-            aux.append(float(dt[i][2]))
-            aux.append(float(dt[i][foco]))
-            mat.append(aux)
-
-        norma = Treinamento()
-        mat_n = norma.normalizar(mat) #Vai normalizar os dados de cada coluna e de cada linha
-        if janela == 'Sim':
-            matriz_t, matriz_r = self.janela_deslizante(mat_n) #Vai fazer as matrizes para o input no formato de janela deslizante
-        else:
-            matriz_t, matriz_r = self.input_comum(mat_n)
-        m1_40_t = list()
-        m1_40_r = list()
-        m2_40_t = list() #Para o aprediz lv0 fazer os predicts, que serão um dos inputs do meta
-        m2_40_r = list()
-        m3_20_t = list()
-        m3_20_r = list()
-
-        tamanho = len(matriz_t)
-        t1 = floor(tamanho * 0.4)
-        t2 = t1 * 2
-
-        for i in range(tamanho): #Vai separa as porções de dados
-            if i <= t1:
-                m1_40_t.append(matriz_t[i])
-                m1_40_r.append(matriz_r[i])
-            elif i > t1 and i <=t2:
-                m2_40_t.append(matriz_t[i])
-                m2_40_r.append(matriz_r[i])
-            else:
-                m3_20_t.append(matriz_t[i])
-                m3_20_r.append(matriz_r[i])
-        
-        return m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r
-         
-    def janela_deslizante(self, data):
-        matriz = list()
-        resultado = list()
-        buff = list()
-        for i in range(len(data)):
-            buff = list()
-            try:
-                for j in range(5):
-                    buff.append(data[i+j][0])
-                    buff.append(data[i+j][1])
-                    buff.append(data[i+j][2])
-                    buff.append(data[i+j][3])
-                if len(buff) == 20:
-                    matriz.append(buff[:19])
-                    resultado.append(buff[19])
-            except IndexError:
-                pass
-        return matriz, resultado
-
-    def input_comum(self, data):
-        matriz = list()
-        resultado = list()
-        
-        for i in range(len(data)):
-            buff = list()
-            buff.append(data[i][0])
-            buff.append(data[i][1])
-            buff.append(data[i][2])
-            matriz.append(buff)
-
-            resultado.append(data[i][3])
-
-        return matriz, resultado
     
-    def base_learn(self, mach, pre, n_test, mat_in_tr, mat_res_tr, mat_in_valid, mat_res_valid, mat_in_p2, mat_res_p2, janela):
-        if pre == 0:
-            if mach == 'Decision Trees':
-                aprendiz_lv0 = tree.DecisionTreeRegressor()
-            elif mach == 'Neural network':
-                aprendiz_lv0 = MLPRegressor()
-            elif mach == 'Nearest Neighbors':
-                aprendiz_lv0 = KNeighborsRegressor()
-            elif mach == 'Support Vector':
-                aprendiz_lv0 = SVR()
+fundo = '#4F4F4F' #? Cor de fundo da tela
+fun_b = '#3CB371' #? Cor de fundo dos botoes
+fun_ap = '#9C444C'
+fun_alt = '#C99418'
+fun_meta_le = '#191970'
 
-        soma_er_nteste = 0
-        soma_ea_nteste = 0
-        
-        soma_r2 = 0
-        for i in range(n_test):
-            aprendiz_lv0 = aprendiz_lv0.fit(mat_in_tr, mat_res_tr)
-            soma_ea = 0
-            soma_er = 0
-            soma_r2 = soma_r2 + aprendiz_lv0.score(mat_in_valid, mat_res_valid)
-            for j in range(len(mat_in_valid)):
-                valor_ex = float(mat_res_valid[j])
-                valor_aprox = float(aprendiz_lv0.predict([(mat_in_valid[j])])[0])
-                Erro_abs = abs(valor_ex - valor_aprox)
-                Erro_rel = Erro_abs / valor_ex
-
-                soma_ea = soma_ea + Erro_abs
-                soma_er = soma_er + Erro_rel
-            
-            soma_ea_nteste = soma_ea_nteste + soma_ea/len(mat_in_valid)
-            soma_er_nteste = soma_er_nteste + soma_er/len(mat_in_valid)
-
-        media_ea = soma_ea_nteste / n_test
-        media_er = soma_er_nteste / n_test
-        porc_erro = media_ea * 100
-        r2 = soma_r2 / n_test
-
-        #Preparando os dados do aprendiz lv0 para o aprendiz lv1
-        mat_p2 = list()
-        if janela == 'Sim':        
-            
-            for i in range(len(mat_in_p2)):
-                aux = list()
-                valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])
-                aux.append(mat_in_p2[i][16])
-                aux.append(mat_in_p2[i][17])
-                aux.append(mat_in_p2[i][18])
-                aux.append(valor)
-                mat_p2.append(aux)
-        else:
-            for i in range(len(mat_in_p2)):
-                aux = list()
-                valor = float(aprendiz_lv0.predict([(mat_in_p2[i])])[0])
-                aux.append(mat_in_p2[i][0])
-                aux.append(mat_in_p2[i][1])
-                aux.append(mat_in_p2[i][2])
-                aux.append(valor)
-                mat_p2.append(aux)
-        return mat_p2, media_ea, media_er, porc_erro, r2
-
-
-    def triangula(self, metodo, foco):
-        t = Triangulaction()
-        nor = Treinamento()
-        if metodo == 'Inverse Distance Weighted':
-            t.idw(foco)
-            matriz_triang = nor.normalizar(t.get_idw()[5])
-            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_idw()
-            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
-        elif metodo == 'Arithmetic Average':
-            t.aa(foco)
-            matriz_triang = nor.normalizar(t.get_aa()[5])
-            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_aa()
-            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
-        elif metodo == 'Regional Weight':
-            t.rw(foco)
-            matriz_triang = nor.normalizar(t.get_rw()[5])
-            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_rw()
-            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
-        elif metodo == 'Optimized Normal Ratio':
-            t.onr(foco)
-            matriz_triang = nor.normalizar(t.get_onr()[5])
-            x,y,alv_y, erro_abs, erro_rel, mat_ext = t.get_onr()
-            erro_abs, erro_rel = self.calcula_erro_tri(alv_y, y)
-
-        tamanho = len(matriz_triang)
-        t1 = floor(tamanho * 0.4)
-        t2 = t1 * 2
-
-        matriz_final_data = list()
-        matriz_final_dado = list()
-        
-        for i in range(len(matriz_triang)):
-            if i > t1 and i <= t2:
-                aux = list()
-                aux.append(matriz_triang[i][0])
-                aux.append(matriz_triang[i][1])
-                aux.append(matriz_triang[i][2])
-                matriz_final_data.append(aux)
-                matriz_final_dado.append(matriz_triang[i][3])
-                
-
-        return matriz_final_data, matriz_final_dado, erro_abs, erro_rel
-        
-        
-    def calcula_erro_tri(self, x, y):
-        t = Treinamento()
-        mat1 = t.normalizar(x)
-        mat2 = t.normalizar(y)
-        
-        soma_ea = 0
-        soma_er = 0
-        for i in range(len(mat1)):
-            ea = abs(float(mat1[i]) - float(mat2[i]))
-            er = ea / float(mat1[i])
-
-            soma_ea = soma_ea + ea
-            soma_er = soma_er + er
-
-        ea = soma_ea / len(mat1)
-        er = soma_er / len(mat2)
-        return ea, er
-
-
-    def meta_learning_personalizado(self, indicador, base_l, metodo_tri, meta_l, pre1, pre2, n_test, janela):
-        m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r = self.prepara_input(indicador, janela)
-        if base_l != 'Nenhum':
-            matriz_input, base_ea, base_er, base_porc, base_r2 = self.base_learn(base_l, 0, n_test, m1_40_t, m1_40_r, m3_20_t, m3_20_r, m2_40_t, m2_40_r, janela)
-            del matriz_input[:2]
-        if metodo_tri != 'Nenhum':
-            seila, matriz_trian, tria_ea, tria_er = self.triangula(metodo_tri, indicador)
-            
-            del matriz_trian[:4]
-        
-        matriz_datas, a, b, c = self.triangula('Arithmetic Average', indicador)
-        del matriz_datas[:4]
-        
-        
-        del m2_40_r[:2]
-        
-        matriz_f = list()
-        result_f = list()
-        for i in range(len(matriz_datas)):
-            aux = list()
-            if base_l == 'Nenhum' :
-                aux.append(matriz_datas[i][0])
-                aux.append(matriz_datas[i][1])
-                aux.append(matriz_datas[i][2])
-                aux.append(matriz_trian[i])
-            elif metodo_tri == 'Nenhum':
-                aux.append(matriz_datas[i][0])
-                aux.append(matriz_datas[i][1])
-                aux.append(matriz_datas[i][2])
-                aux.append(matriz_input[i][3])
-            else:
-                aux.append(matriz_datas[i][0])
-                aux.append(matriz_datas[i][1])
-                aux.append(matriz_datas[i][2])
-                aux.append(matriz_trian[i])
-                aux.append(matriz_input[i][3])
-            matriz_f.append(aux)
-
-        if pre2 == 0:
-            if meta_l == 'Decision Trees':
-                aprendiz_lv1 = tree.DecisionTreeRegressor()
-            elif meta_l == 'Neural network':
-                aprendiz_lv1 = MLPRegressor()
-            elif meta_l == 'Nearest Neighbors':
-                aprendiz_lv1 = KNeighborsRegressor()
-            elif meta_l == 'Support Vector':
-                aprendiz_lv1 = SVR()
-
-        
-        t = len(matriz_f)
-        divi = t - floor(t*0.2)
-        x_apre = list()
-        y_apre = list()
-
-        x_test = list()
-        y_test = list()
-        
-        for i in range(t):
-            if i <= divi:
-                x_apre.append(matriz_f[i])
-                y_apre.append(m2_40_r[i])
-            else:
-                x_test.append(matriz_f[i])
-                y_test.append(m2_40_r[i])
-        soma = 0
-        soma_er_nteste = 0
-        soma_ea_nteste = 0
-        x_meta = list()
-        y_meta = list()
-        y_alvo = list()
-
-        x = 0
-        for i in range(n_test):
-            aprendiz_lv1 = aprendiz_lv1.fit(x_apre, y_apre)
-            val = aprendiz_lv1.score(x_test, y_test)
-            soma = soma + val #Calcular o R2
-
-            soma_ea = 0
-            soma_er = 0
-            for j in range(len(x_test)):
-                valor_ex = float(y_test[j])
-                valor_aprox = float(aprendiz_lv1.predict([(x_test[j])])[0])
-
-                y_meta.append(valor_aprox)
-                y_alvo.append(valor_ex)
-                x_meta.append(x)
-                x += 1
-
-                Erro_abs = abs(valor_ex - valor_aprox)
-                Erro_rel = Erro_abs / valor_ex
-
-                soma_ea = soma_ea + Erro_abs
-                soma_er = soma_er + Erro_rel
-            
-            soma_ea_nteste = soma_ea_nteste + soma_ea/len(x_test)
-            soma_er_nteste = soma_er_nteste + soma_er/len(x_test)
-        meta_ea = soma_ea_nteste / n_test
-        meta_er = soma_er_nteste / n_test
-        meta_porc_erro = meta_ea * 100
-        meta_r2 = soma / n_test
-        
-        if base_l == 'Nenhum':
-            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, 0, 0, 0, 0, tria_ea, tria_er
-        elif metodo_tri == 'Nenhum':
-            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, base_ea, base_er, base_porc, base_r2, 0, 0
-        else:
-            return meta_ea, meta_er, meta_porc_erro, meta_r2, x_meta, y_meta, y_alvo, base_ea, base_er, base_porc, base_r2, tria_ea, tria_er
-    
-    def meta_learning_combina(self,  foco, pre1, pre2, n_test, janela):
-        machine_l = ['Nenhum','Decision Trees', 'Neural network', 'Nearest Neighbors', 'Support Vector']
-        triangulacao = ['Nenhum', 'Arithmetic Average', 'Inverse Distance Weighted', 'Regional Weight', 'Optimized Normal Ratio']
-        meta_l = ['Decision Trees', 'Neural network', 'Nearest Neighbors', 'Support Vector']
-        
-        todos_mod = list()
-        ranking_mod = list()
-
-        if foco == 'Precipitação':
-            indicador = 1
-        elif foco == 'Temperatura máxima':
-            indicador = 2
-        else:
-             indicador = 3
-
-        m1_40_t, m1_40_r, m2_40_t, m2_40_r, m3_20_t, m3_20_r = self.prepara_input(indicador, janela)
-
-        arq = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_comb.txt', 'w')
-        arq2 = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_res.csv', 'w')
-        arq3 = open(r'E:\IC\Interface_Grafica\Dados_verificacao\meta_best_results.csv', 'w')
-
-        arq2.write("Modelo;Machine Learning;Triangulação;Meta Learning;Erro Absoluto;Erro Relativo;Erro(%);R2;\n")
-        arq3.write("Modelo;Erro(%);\n")
-        Modelos = dict()
-        cont_model = 1
-        teste = repr("Modelo").center(8) + ' || ' + repr('Base-Learning').center(30) + ' || ' +  repr('Triangulation').center(30) + ' || ' + repr('Meta-Learning').center(30) + ' || ' +  repr("Erro(%)").center(20)
-        
-        for i in range(len(machine_l)):
-            for j in range(len(triangulacao)):
-                for k in range(len(meta_l)):
-                    if machine_l[i] == 'Nenhum' and triangulacao[j] == 'Nenhum':
-                        k += 1
-                    else:
-                        if machine_l[i] != 'Nenhum':
-                            matriz_input, base_ea, base_er, base_porc, base_r2 = self.base_learn(machine_l[i], 0, n_test, m1_40_t, m1_40_r, m3_20_t, m3_20_r, m2_40_t, m2_40_r, janela)
-                            del matriz_input[:2]
-                        if triangulacao[j] != 'Nenhum':
-                            seila, matriz_trian, tria_ea, tria_er = self.triangula(triangulacao[j], indicador)
-                            del matriz_trian[:4]
-                        
-                        matriz_datas, a, b, c = self.triangula('Arithmetic Average', indicador)
-                        del matriz_datas[:4]
-                        del m2_40_r[:2]
-
-                        matriz_f = list()
-                        result_f = list()
-                        for l in range(len(matriz_datas)):
-                            aux = list()
-                            if machine_l[i] == 'Nenhum' and triangulacao[j] != 'Nenhum':
-                                aux.append(matriz_datas[l][0])
-                                aux.append(matriz_datas[l][1])
-                                aux.append(matriz_datas[l][2])
-                                aux.append(matriz_trian[l])
-                            if triangulacao[j] == 'Nenhum' and machine_l[i] != 'Nenhum':
-                                aux.append(matriz_datas[l][0])
-                                aux.append(matriz_datas[l][1])
-                                aux.append(matriz_datas[l][2])
-                                aux.append(matriz_input[l][3])
-                            if triangulacao[j] != 'Nenhum' and machine_l[i] != 'Nenhum':
-                                aux.append(matriz_datas[l][0])
-                                aux.append(matriz_datas[l][1])
-                                aux.append(matriz_datas[l][2])
-                                aux.append(matriz_trian[l])
-                                aux.append(matriz_input[l][3])
-                            matriz_f.append(aux)
-
-                        if pre2 == 0:
-                            if meta_l[k] == 'Decision Trees':
-                                aprendiz_lv1 = tree.DecisionTreeRegressor()
-                            elif meta_l[k] == 'Neural network':
-                                aprendiz_lv1 = MLPRegressor()
-                            elif meta_l[k] == 'Nearest Neighbors':
-                                aprendiz_lv1 = KNeighborsRegressor()
-                            elif meta_l[k] == 'Support Vector':
-                                aprendiz_lv1 = SVR()
-
-                        
-                        t = len(m2_40_r)
-                        divi = t - floor(t*0.2)
-                        x_apre = list()
-                        y_apre = list()
-
-                        x_test = list()
-                        y_test = list()
-                        
-                        for n in range(t):
-                            if n <= divi:
-                                x_apre.append(matriz_f[n])
-                                y_apre.append(m2_40_r[n])
-                            else:
-                                x_test.append(matriz_f[n])
-                                y_test.append(m2_40_r[n])
-                        soma = 0
-                        soma_er_nteste = 0
-                        soma_ea_nteste = 0
-                        x_meta = list()
-                        y_meta = list()
-                        y_alvo = list()
-
-                        x = 0
-                        for l in range(n_test):
-                            aprendiz_lv1 = aprendiz_lv1.fit(x_apre, y_apre)
-                            val = aprendiz_lv1.score(x_test, y_test)
-                            soma = soma + val #Calcular o R2
-
-                            soma_ea = 0
-                            soma_er = 0
-                            for m in range(len(x_test)):
-                                valor_ex = float(y_test[m])
-                                valor_aprox = float(aprendiz_lv1.predict([(x_test[m])])[0])
-
-                                y_meta.append(valor_aprox)
-                                y_alvo.append(valor_ex)
-                                x_meta.append(x)
-                                x += 1
-
-                                Erro_abs = abs(valor_ex - valor_aprox)
-                                Erro_rel = Erro_abs / valor_ex
-
-                                soma_ea = soma_ea + Erro_abs
-                                soma_er = soma_er + Erro_rel
-                            
-                            soma_ea_nteste = soma_ea_nteste + soma_ea/len(x_test)
-                            soma_er_nteste = soma_er_nteste + soma_er/len(x_test)
-                        meta_ea = soma_ea_nteste / n_test
-                        meta_er = soma_er_nteste / n_test
-                        meta_porc_erro = meta_ea * 100
-                        meta_r2 = soma / n_test
-
-                        texto = str(cont_model) + " -> Machine Learning: " + machine_l[i] + "  ||  Triangulação: " + triangulacao[j] + "  || Meta Learning: " + meta_l[k] + "  |Resultados para " + str(n_test)+ " testes| --> Erro Absoluto: " + str(meta_ea) + "  |  Erro Relativo: " + str(meta_er) + "  |  Erro(%): " + str(meta_porc_erro) + "  |  R2: " + str(meta_r2)
-                        arq.write(texto + "\n")
-                        
-                        teste = repr(cont_model).center(8) + ' || ' + repr(machine_l[i]).center(30) + ' || ' + repr(triangulacao[j]).center(30) + ' || ' + repr(meta_l[k]).center(30) + ' || ' + repr(meta_porc_erro).center(20)
-                        #print(teste)
-                        
-                        
-                        texto = str(cont_model) + ";" + machine_l[i] + ";" + triangulacao[j] + ";" + meta_l[k] + ";" + str(meta_ea).replace('.', ',') + ";" + str(meta_er).replace('.', ',') + ";" + str(meta_porc_erro).replace('.', ',') + ";" + str(meta_r2).replace('.', ',') + ";"   
-                        arq2.write(texto + "\n")
-
-                        Modelos[str(cont_model)] = meta_porc_erro
-                        
-
-                        aux = list()
-                        aux.append(cont_model)      #0
-                        aux.append(machine_l[i])    #1
-                        aux.append(triangulacao[j]) #2
-                        aux.append(meta_l[k])       #3
-                        aux.append(n_test)          #4
-                        aux.append(round(meta_ea, 4)) #5
-                        aux.append(round(meta_er, 4)) #6
-                        aux.append(round(meta_porc_erro, 4)) #7
-                        aux.append(round(meta_r2, 4)) #8
-                        todos_mod.append(aux)
-
-                        cont_model += 1
-        for z in sorted(Modelos, key=Modelos.get):
-            arq3.write(str(z) + ";" + str(Modelos[z]).replace('.', ',') + ";\n")
-            aux = list()
-            aux.append(str(z))
-            aux.append(str(Modelos[z]).replace('.', ','))
-            ranking_mod.append(aux)             
-        arq.close()
-        arq2.close()
-        arq3.close()
-
-        return todos_mod, ranking_mod
-
-class Tratamento:
-    global alvo
-    global vizinhaA
-    global vizinhaB
-    global vizinhaC
-    global download
-    alvo = vizinhaA = vizinhaB = vizinhaC = download = ''
-    def __init__(self):
-        self.alvo = alvo
-        self.vizinhaA = vizinhaA
-        self.vizinhaB = vizinhaB
-        self.vizinhaC = vizinhaC
-        self.download = download
-        
-    # def __init__(self, alvo, vizinhaA, vizinhaB, vizinhaC, download):
-    
-    
-    def get_data_trada(self): #! Funçao para retornar os dados tratados
-        diretorio = [self.alvo, self.vizinhaA, self.vizinhaB, self.vizinhaC]
-       
-        temp = [str(self.download) + "/alvo_limpa.txt", str(self.download) + "/vizinhaA_limpa.txt", str(self.download) + "/vizinhaB_limpa.txt", str(self.download) + "/vizinhaC_limpa.txt"]
-        arq1 = open("end.txt", "w")
-        arq1.write(str(self.download) + "/alvo_limpa.txt\n" + str(self.download) + "/vizinhaA_limpa.txt\n" + str(self.download) + "/vizinhaB_limpa.txt\n" + str(self.download) + "/vizinhaC_limpa.txt")
-        arq1.close()
-        cont = 0
-        comum_alvo = comum_vizA = comum_vizB = comum_vizC = list()
-
-        for dir in diretorio:
-            aux = list()
-            with open(dir) as arq: #* Abrindo os arquivos .csv e armazenando numa lista
-                reader = csv.reader(arq)
-                for line in reader:
-                    aux.append(line)
-        
-            del aux[len(aux)-1]      #? Remove a ultima linha em branco do arquivo, da pra fazer isso manualmente, mas caso o usuario trabalhe com inumeros arquivos, remover a ultima linha de cada arquivo pode ser um trabalho massante 
-            del aux[0:11]            #? Remove o cabeçalho do arquivo .csv
-            
-            for i in range(len(aux)): #* removendo caracteres e colunas desnecessários
-                aux[i] = str(aux[i]).strip('[')     
-                aux[i] = str(aux[i]).strip(']')
-                aux[i] = str(aux[i]).strip("'")
-                aux[i] = str(aux[i]).split(';')
-
-                del aux[i][9] #* Removendo a ultima coluna, que está vazia '' 
-                #* Deixando apenas as colunas de data, precipitação, temp max e temp min
-                del aux[i][1:3]
-                del aux[i][3]
-                del aux[i][4:6]
-
-            final = list()  #* Lista final 
-
-            for i in range(len(aux)): #* Removendo todas as linhas que possuem o valor null em seu parametros
-                condicao = 0
-                for j in range(1,4):
-                    if aux[i][j] == 'null':
-                        condicao = 1
-
-                if condicao == 0:
-                    final.append(aux[i])    
-
-
-            for i in range(len(final)): #* Passando a data de AAAA-MM-DD para AAAA, MM, DD
-                aux.clear()
-                for j in range(4):
-                    aux.append(final[i][j])
-                data = aux[0]
-                data = str(data).split('-')
-
-                final[i].insert(0, int(data[0]))
-                final[i].insert(1, int(data[1]))
-                final[i].insert(2, int(data[2]))
-                del final[i][3]
-
-
-            new_arq = open(temp[cont], 'w')    #TODO: Salvando os dados em arquivos .txt
-            for i in final:
-                if cont == 0:
-                    comum_alvo.append(i)
-                elif cont == 1:
-                    comum_vizA.append(i)
-                elif cont == 2:
-                    comum_vizB.append(i)
-                else:
-                    comum_vizC.append(i)
-
-                i = str(i).strip("[")
-                i = str(i).strip("]")
-                new_arq.write(str(i)+"\n")
-            new_arq.close()
-            cont += 1
-
-        self.get_coordinates()
-        
-        self.dadosc()
-        
-    def dadosc(self):
-        #subprocess.call(r'E:\IC\Interface_Grafica\codes\dadosc.py', shell=True)
-        cid1, t1 = self.prepara_dadosc(str(self.download) + "/alvo_limpa.txt")
-        cid2, t2 = self.prepara_dadosc(str(self.download) + "/vizinhaA_limpa.txt")
-        cid3, t3 = self.prepara_dadosc(str(self.download) + "/vizinhaB_limpa.txt")
-        cid4, t4 = self.prepara_dadosc(str(self.download) + "/vizinhaC_limpa.txt")
-        ano_ini = max([cid1[0][0], cid2[0][0], cid3[0][0], cid4[0][0]])
-        fim = min(len(cid1), len(cid2), len(cid3), len(cid4))
-        
-        for i in range(len(cid1)):
-            if ano_ini == cid1[i][0]:
-                ind1 = i
-                break
-        for i in range(len(cid2)):
-            if ano_ini == cid2[i][0]:
-                ind2 = i
-                break
-        for i in range(len(cid3)):
-            if ano_ini == cid3[i][0]:
-                ind3 = i
-                break
-        for i in range(len(cid4)):
-            if ano_ini == cid4[i][0]:
-                ind4 = i
-                break
-
-        final = list()
-        aux = list()
-
-        arq1 = open('end.txt', 'a')
-        arq1.write('\n' + str(self.download) + '/dadoscomum.csv\n' + str(self.download) + '/buff.txt\n')
-        arq1.close()
-
-        arq = open(str(self.download) + '/dadoscomum.csv', 'w')
-
-        arq_b = open(str(self.download) + '/buff.txt', 'w')
-        total = 0
-        for i in range(fim):
-            ano1 = cid1[ind1+i][0]
-            mes1 = cid1[ind1+i][1]
-            dia1 = cid1[ind1+i][2]
-            cond1 = 0
-            for j in range(fim):
-                ano2 = cid2[ind2+j][0]
-                mes2 = cid2[ind2+j][1]
-                dia2 = cid2[ind2+j][2]
-
-                if (ano1 == ano2) and (mes1 == mes2) and (dia1 == dia2):
-                    for k in range(fim):
-                        ano3 = cid3[ind3+k][0]
-                        mes3 = cid3[ind3+k][1]
-                        dia3 = cid3[ind3+k][2] 
-                        if (ano2 == ano3) and (mes2 == mes3) and (dia2 == dia3):
-                                for z in range(fim):
-                                    ano4 = cid4[ind4+z][0]
-                                    mes4 = cid4[ind4+z][1]
-                                    dia4 = cid4[ind4+z][2]
-                                    if (ano3 == ano4) and (mes3 == mes4) and (dia3 == dia4):
-                                        aux.clear()
-                                        
-                                        """  -> Adicionando os dados numa lista <-  """
-                                        buff = ''   
-                                        buff = str(ano1) + " " + str(mes1) + " " + str(dia1) + " " + cid1[ind1+i][3] + " " + cid1[ind1+i][4] + " " + cid1[ind1+i][5] + " " + cid2[ind2+j][3] + " " + cid2[ind2+j][4] + " " + cid2[ind2+j][5] + " " + cid3[ind3+k][3] + " " + cid3[ind3+k][4] + " " + cid3[ind3+k][5] + " " + cid4[ind4+z][3] + " " + cid4[ind4+z][4] + " " + cid4[ind4+z][5]  
-                                        buff = str(buff).split()
-                                        final.append(buff)
-                                        
-                                        """  -> Adicinando os dados num arquivo .csv <-  """
-                                        buff = ''
-                                        buff = str(ano1) + ";" + str(mes1) + ";" + str(dia1) + ";" + cid1[ind1+i][3] + ";" + cid1[ind1+i][4] + ";" + cid1[ind1+i][5] + ";" + cid2[ind2+j][3] + ";" + cid2[ind2+j][4] + ";" + cid2[ind2+j][5] + ";" + cid3[ind3+k][3] + ";" + cid3[ind3+k][4] + ";" + cid3[ind3+k][5] + ";" + cid4[ind4+z][3] + ";" + cid4[ind4+z][4] + ";" + cid4[ind4+z][5] + ";\n"
-                                        arq.write(buff)
-                                        total += 1
-                                        cond1 = 1
-                                        break
-                                    
-                                    
-                                
-                        if (cond1 == 1):
-                            break
-                
-                if(cond1 == 1):
-                    break
-        arq_b.write(str(total) + " " + str(t1) + " " + str(t2) + " " + str(t3) + " " + str(t4))
-        arq.close()
-        arq_b.close()
-        
-        
-
-
-    def prepara_dadosc(self, dir):
-        arq = open(dir)
-        lista = list()
-
-        t=0
-        for i in arq:
-            i = i.strip()
-            i = i.replace("'",'')
-            i = i.replace(" ",'')
-            i = i.split(',')    
-            lista.append(i)
-            t += 1
-        return lista, t
-
-
-    def retorna_arq(self, op):
-        arq = open('end.txt') 
-        a = arq.readlines()
-        print(a[0].replace("\n", ''))
-        arq.close()
-        if op == 'Cidade alvo':
-            di = a[0].replace("\n", '')
-        elif op == 'Vizinha A':
-            di = a[1].replace("\n", '')
-        elif op == 'Vizinha B':
-            di = a[2].replace("\n", '')
-        elif op == 'Vizinha C':
-            di = a[3].replace("\n", '')
-        elif op == 'Dados comum':
-            di = a[4].replace("\n", '')
-            
-        
-
-        
-        lista = list()
-        
-        arq = open(di)
-        
-        for i in arq:
-            i = i.strip()
-            i = i.replace("'",'')
-            i = i.replace(" ",'')
-            if op == 'Dados comum':
-                i = i.split(';')
-                del i[len(i)-1]
-            else:
-                i = i.split(',')  
-            lista.append(i)
-        arq.close()
-        return lista
-    
-    def get_range(self, op):
-        controle = 0
-        arq = open('end.txt') 
-        a = arq.readlines()
-        print(a[0].replace("\n", ''))
-        arq.close()
-        if op == 'Cidade alvo':
-            di = a[0].replace("\n", '')
-        elif op == 'Vizinha A':
-            di = a[1].replace("\n", '')
-        elif op == 'Vizinha B':
-            di = a[2].replace("\n", '')
-        elif op == 'Vizinha C':
-            di = a[3].replace("\n", '')
-        elif op == 'Dados comum':
-            di = a[4].replace("\n", '')
-            controle = 1
-            
-        arq = open(di)
-        aux = list()
-    
-        for i in arq:
-            i = i.strip()
-            i = i.replace("'",'')
-            i = i.replace(" ",'')
-            if controle == 1:
-                i = i.split(';')
-                del i[len(i)-1]
-            else:
-                i = i.split(',')
-            aux.append(int(i[0]))
-        arq.close()
-        anos = list()
-        buff = aux[0]
-    
-        anos.append(buff)
-        
-        for i in range(1,len(aux)): 
-            try:
-                if aux[i-1] != aux[i]:
-                    buff = aux[i]
-                    anos.append(buff)
-            except IndexError:
-                pass
-        return anos
-
-    def get_qtd(self):
-        arq = open('end.txt') 
-        a = arq.readlines()
-        arq = open(a[5].replace("\n", ''))
-        
-        a = arq.readline()
-        a = a.split()
-        ut = int(a[0])
-        Tar = int(a[1])
-        vA = int(a[2])
-        vB = int(a[3])
-        vC = int(a[4])
-        arq.close()
-        return ut, Tar,vA, vB, vC
-
-    def normalizar_dados(self, mat):
-        max_min = list()
-        aux = list()
-        t = len(mat[0])
-        for i in range(t):
-            aux.clear()
-            for j in range(len(mat)):
-                aux.append(mat[j][i])
-            max_min.append(max(aux))
-            max_min.append(min(aux))
-
-        dadosn =list()
-        
-    
-        for i in range(len(mat)):
-            cont = 0
-            buff = list()
-            for j in range(t):
-                if cont <= 36:
-                    maior = max_min[cont]
-                    menor = max_min[cont + 1]
-                    dado = ((float(mat[i][j]) - float(menor)) / (float(maior) - float(menor))) * 0.6 + 0.2
-                    buff.append(dado)
-                    cont = cont + 2
-            dadosn.append(buff)
-        
-        
-        return dadosn
-
-    def get_coordinates(self): # ? Função para obter as coordenadas de cada cidade
-        coordenadas = list()
-        aux = list()
-        locais = [self.alvo, self.vizinhaA, self.vizinhaB, self.vizinhaC]
-
-        for i in locais:
-            aux.clear()
-            with open(i) as arq:
-                reader = csv.reader(arq)
-                for j in reader:
-                    aux.append(j)
-            
-            del aux[10:]
-
-            estacao = str(aux[0]).split(':')
-            estacao = estacao[1].strip(']')
-            estacao = (estacao.strip("'")).strip()
-
-            latitude = str(aux[2]).split(':')
-            latitude = latitude[1].strip(']')
-            latitude = (latitude.strip("'")).strip()
-
-            longitude = str(aux[3]).split(':')
-            longitude = longitude[1].strip(']')
-            longitude = (longitude.strip("'")).strip()
-
-            altitude = str(aux[4]).split(':')
-            altitude = altitude[1].strip(']')
-            altitude = (altitude.strip("'")).strip()
-
-            coordenadas.append(estacao)
-            coordenadas.append(latitude)
-            coordenadas.append(longitude)
-            coordenadas.append(altitude)
-        aux = str(self.download) + '/Coordenadas.txt'
-        arq = open(aux, 'w')
-        for i in coordenadas:
-            arq.write(i)
-            arq.write('\n')
-
-        arq.close()    
 
 class Selecionar_Arquivos_win(Toplevel):
     def tratar(self):
@@ -2024,7 +2217,6 @@ class Selecionar_Arquivos_win(Toplevel):
         datat.vizinhaB = self.dir_vB.get()
         datat.vizinhaC = self.dir_vC.get()
         datat.download = self.dir_save.get()
-        print(self.dir_save.get())
         datat.get_data_trada()
         msg.showinfo(title="Sucesso!", message="Arquivos Selecionados com sucesso!")
         Toplevel.destroy(self)
@@ -2044,10 +2236,42 @@ class Selecionar_Arquivos_win(Toplevel):
         Toplevel.__init__(self, master=master)
 
         self.title('Selecionar arquivos')
-        self.geometry("500x370")
+        self.geometry("500x420")
+        
         self.configure(background=fundo)
 
+        
+        Grid.columnconfigure(self, 0, weight=1)
+        
+        
+        
+        Label(self, text='SELECIONAR ARQUIVOS', font='Arial 18 bold', fg='white',bg=fundo).grid(row=0, column=0, padx=10, pady=2, columnspan=3)
 
+        self.dir_alvo = StringVar()
+        Label(self, text="Cidade Alvo:", font='Arial 12 bold', fg='white', bg=fundo).grid(row=1, column=0,  padx=10, pady=2, sticky='W')
+        Entry(self, textvariable= self.dir_alvo, font='Arial 12', width=45).grid(row=2, column=0, sticky='WE', padx=10, pady=2)
+        Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: procura_arq(self.dir_alvo)).grid(row=2, column=1, sticky='W', padx=10, pady=2)
+
+        self.dir_vA = StringVar()
+        Label(self, text="Cidade vizinha A:", font='Arial 12 bold', fg='white', bg=fundo).grid(row=3, column=0, ipadx=10, pady=2, sticky='W')  
+        Entry(self, textvariable= self.dir_vA, font='Arial 12', width=45).grid(row=4, column=0, sticky='WE', padx=10, pady=2)
+        Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: procura_arq(self.dir_vA)).grid(row=4, column=1, sticky='W', padx=10, pady=2)
+
+        self.dir_vB = StringVar()
+        Label(self, text="Cidade vizinha B:", font='Arial 12 bold', fg='white', bg=fundo).grid(row=5, column=0,  ipadx=10, pady=2, sticky='W') 
+        Entry(self, textvariable=self.dir_vB, font='Arial 12', width=45).grid(row=6, column=0, sticky='WE', padx=10, pady=2)
+        Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: procura_arq(self.dir_vB)).grid(row=6, column=1, sticky='W', padx=10, pady=2)
+
+        self.dir_vC = StringVar()
+        Label(self, text="Cidade vizinha C:", font='Arial 12 bold', fg='white', bg=fundo).grid(row=7, column=0,  ipadx=10, pady=2, sticky='W')  
+        Entry(self, textvariable=self.dir_vC, font='Arial 12', width=45).grid(row=8, column=0, sticky='WE', padx=10, pady=2)
+        Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: procura_arq(self.dir_vC)).grid(row=8, column=1, sticky='W', padx=10, pady=10)
+
+        self.dir_save = StringVar()
+        Label(self, text="Local para salvar os dados tratados:", font='Arial 12 bold', fg='white', bg=fundo).grid(row=9, column=0, ipadx=10, pady=2, sticky='W')
+        teste = Entry(self, textvariable=self.dir_save, font='Arial 12', width=45).grid(row=10, column=0, sticky='WE', padx=10, pady=2)
+        Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: escolhe_pasta(self.dir_save)).grid(row=10, column=1, sticky='W', padx=10, pady=10)
+        '''
         Label(self, text='SELECIONAR ARQUIVOS', font='Arial 18 bold', fg='white',bg=fundo).place(x=110, y=10)
 
         self.dir_alvo = StringVar()
@@ -2074,15 +2298,11 @@ class Selecionar_Arquivos_win(Toplevel):
         Label(self, text="Local para salvar os dados tratados:", font='Arial 12 bold', fg='white', bg=fundo).place(x=20, y=250)
         teste = Entry(self, textvariable=self.dir_save, font='Arial 12', width=45).place(x=20, y=275)
         Button(self, text='...', font='Arial 10 bold', fg='white', bg=fun_b, width=4, command=lambda: escolhe_pasta(self.dir_save)).place(x=440, y=273)
-
+        '''
         #Todo: Para Agilizar os testes
-        self.dir_alvo.set('E:/IC/Dados/TriangulacaoBH/BELOHORIZONTE.csv')
-        self.dir_vA.set('E:/IC/Dados/TriangulacaoBH/FLORESTAL.csv')
-        self.dir_vB.set('E:/IC/Dados/TriangulacaoBH/IBIRITE.csv')
-        self.dir_vC.set('E:/IC/Dados/TriangulacaoBH/SETELAGOAS.csv')
-        self.dir_save.set('E:/IC/Interface_Grafica/Dados_verificacao')
+        
 
-        Button(self, text='Prosseguir', font='Arial 12 bold', fg='white', bg=fun_b, width=45, command=self.tratar).place(x=21, y=320)
+        Button(self, text='Prosseguir', font='Arial 12 bold', fg='white', bg=fun_b, width=45, command=self.tratar).grid(row=11, column=0, padx=10, pady=2, columnspan=3)
 
 class Aprendizado_Marquina(Toplevel):
     def int_float(self, val):
@@ -2139,6 +2359,10 @@ class Aprendizado_Marquina(Toplevel):
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.place(x=1150, y=10)
         toolbar.update()
+    
+    def get_end(self, cidade):
+        Trat = Tratamento()
+        return Trat.retorna_end(cidade)
 
     def gerar_preview_dt(self):
         prev = Treinamento()
@@ -2146,15 +2370,8 @@ class Aprendizado_Marquina(Toplevel):
         
 
 
-        if self.data_s.get() == 'Cidade alvo':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
-        elif self.data_s.get() == 'Vizinha A':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
-        elif self.data_s.get() == 'Vizinha B':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
-        elif self.data_s.get() == 'Vizinha C':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
-
+        #cidade = self.get_end(self.data_s.get())
+        cidade = self.data_s.get()
         indicador = self.ind_s.get()
         divisao = int(self.por_trei.get())
         criterio = self.criterion_v.get()
@@ -2183,14 +2400,8 @@ class Aprendizado_Marquina(Toplevel):
     def gerar_preview_nn(self):
         prev = Treinamento()
         salvar_m = self.save_model.get()
-        if self.data_s.get() == 'Cidade alvo':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
-        elif self.data_s.get() == 'Vizinha A':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
-        elif self.data_s.get() == 'Vizinha B':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
-        elif self.data_s.get() == 'Vizinha C':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+        
+        cidade = self.get_end(self.data_s.get())
         
         indicador = self.ind_s.get()
         if indicador == 'Precipitação':
@@ -2230,14 +2441,8 @@ class Aprendizado_Marquina(Toplevel):
     def gerar_preview_svm(self):
         prev = Treinamento()
         salvar_m = self.save_model.get()
-        if self.data_s.get() == 'Cidade alvo':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
-        elif self.data_s.get() == 'Vizinha A':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
-        elif self.data_s.get() == 'Vizinha B':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
-        elif self.data_s.get() == 'Vizinha C':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+        
+        cidade = self.get_end(self.data_s.get())
         
         indicador = self.ind_s.get()
         if indicador == 'Precipitação':
@@ -2269,14 +2474,17 @@ class Aprendizado_Marquina(Toplevel):
     def gerar_preview_Kn(self):
         prev = Treinamento()
         salvar_m = self.save_model.get()
-        if self.data_s.get() == 'Cidade alvo':
+
+        cidade = self.get_end(self.data_s.get())
+
+        '''if self.data_s.get() == 'Cidade alvo':
             cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\alvo_limpa.txt'
         elif self.data_s.get() == 'Vizinha A':
             cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaA_limpa.txt'
         elif self.data_s.get() == 'Vizinha B':
             cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaB_limpa.txt'
         elif self.data_s.get() == 'Vizinha C':
-            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'
+            cidade = r'E:\IC\Interface_Grafica\Dados_verificacao\vizinhaC_limpa.txt'''
 
         n_tes = int(self.num_teste.get())
         divisao = int(self.por_trei.get())
@@ -3240,6 +3448,7 @@ class Principal(Frame):
         else:
             eixo_y = list()
 
+      
         dados_lb = list()
         for i in data_ana:
             dados_lb.append(i)
@@ -3248,15 +3457,25 @@ class Principal(Frame):
             mes = str(i[1])
             dia = str(i[2])
             text_data = mes + '/' + dia + '/' + ano
-            eixo_x.append(dt.datetime.strptime(text_data,"%m/%d/%Y").date())
+            
 
             if self.num.get() == 'Dados comum':
-                eixo_y1.append(float(i[col]))
-                eixo_y2.append(float(i[col+3]))
-                eixo_y3.append(float(i[col+6]))
-                eixo_y4.append(float(i[col+9]))
+                try:
+                    
+                    eixo_y1.append(float(i[col].replace(',', '.')))
+                    eixo_y2.append(float(i[col+3].replace(',', '.')))
+                    eixo_y3.append(float(i[col+6].replace(',', '.')))
+                    eixo_y4.append(float(i[col+9].replace(',', '.')))
+                    eixo_x.append(dt.datetime.strptime(text_data,"%m/%d/%Y").date())
+                except ValueError:
+                    pass
+                
             else:
-                eixo_y.append(float(i[col]))
+                try:
+                    eixo_y.append(float(i[col]))
+                    eixo_x.append(dt.datetime.strptime(text_data,"%m/%d/%Y").date())
+                except ValueError:
+                    pass
         
         self.caixad_var.set(dados_lb)
 
@@ -3450,7 +3669,7 @@ class Principal(Frame):
         
         Button(self, text='Definir Range', font='Arial 10 bold', fg='white', bg=fun_b, width=23, command=self.graficos_range).place(x=380, y=209)
 
-        print(self.var_fim.get())
+        #print(self.var_fim.get())
             
     def open_tri(self):
         window = Triangulaction_techniques()

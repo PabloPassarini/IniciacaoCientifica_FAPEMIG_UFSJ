@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import median_absolute_error
 def get_colunas(tipo, vetor):
     tipo = tipo[16:]
     vetor = vetor.split(';')
@@ -123,85 +124,55 @@ imp_mean.fit(alvo_nan)
 teste = imp_mean.transform(alvo_nan)
 
 alvo_sem_null = remover_null(alvo_limpa)
-
+alvo_nan2 = teste.tolist()
 
 m70_x_a, m70_y_a, m30_x_a, m30_y_a = prepara_input(alvo_sem_null, 5)
-m70_x_b, m70_y_b, m30_x_b, m30_y_b = prepara_input(alvo_nan, 5)
+m70_x_b, m70_y_b, m30_x_b, m30_y_b = prepara_input(alvo_nan2, 5)
 
-
-aprendiz_a = MLPRegressor()
-aprendiz_a = aprendiz_a.fit(m70_x_a, m70_y_a)
-
-soma_ea = soma_er = 0
-for i in range(len(m30_x_a)):
-    exato = m30_y_a[i]
-    aprox = aprendiz_a.predict([m30_x_a[i]])[0]
-
-    erro_abs = abs(exato - aprox)
-    erro_rel = erro_abs/exato
-
-    soma_ea += erro_abs
-    soma_er += erro_rel
-
-
-
+n_teste = 30
+media_ea = media_er = 0
 print("---->Dados sem valor null<----")
-print("Erro abs.: {}  ||  Erro rel.: {}  ||  R2: {}".format(soma_ea/len(m30_x_a), soma_er/len(m30_x_a), aprendiz_a.score(m30_x_a, m30_y_a)))
+for j in range(n_teste):
+    aprendiz_a = MLPRegressor()
+    aprendiz_a = aprendiz_a.fit(m70_x_a, m70_y_a)
+    soma_ea = soma_er = 0
+    for i in range(len(m30_x_a)):
+        exato = m30_y_a[i]
+        aprox = aprendiz_a.predict([m30_x_a[i]])[0]
 
-'''
+        erro_abs = abs(exato - aprox)
+        erro_rel = erro_abs/exato
 
-aprendiz_s = MLPRegressor()
-aprendiz_s = aprendiz_s.fit(m70_x, m70_y)
-soma_ea = soma_er = 0
-for i in range(len(m30_x)):
-    valor_exato = m30_y[i]
-    valor_aprox = aprendiz_s.predict([m30_x[i]])[0]
+        soma_ea += erro_abs
+        soma_er += erro_rel
 
-    erro_abs = abs(valor_exato - valor_aprox)
-    erro_rel = erro_abs/valor_aprox
-    soma_ea += erro_abs
-    soma_er += erro_rel
-
-print("Erros (sem limite): {} {}".format(soma_ea/len(m30_x), soma_er/len(m30_x)))
-print("R2 sem limite: {}".format(aprendiz_s.score(m30_x, m30_y)))
-
-
-teste2 = remover_null(alvo_limpa)
-c_m70_x = list()
-c_m70_y = list()
-c_m30_x = list()
-c_m30_y = list()
-t = math.floor(len(teste2)*0.7)
-
-for i in range(len(teste2)):
-    if i <= t:
-        aux = list()
-        for j in range(0,5):
-            aux.append(teste2[i][j])
-        c_m70_x.append(aux)
-        c_m70_y.append(teste2[i][5])
-    else:
-        aux = list()
-        for j in range(0,5):
-            aux.append(teste2[i][j])
-        c_m30_x.append(aux)
-        c_m30_y.append(teste2[i][5])
-
-aprendiz_sem_null = MLPRegressor()
-aprendiz_sem_null = aprendiz_sem_null.fit(c_m70_x, c_m70_y)
-
-soma_ea = soma_er = 0
-for i in range(len(c_m30_x)):
-    valor_exato = m30_y[i]
-    valor_aprox = aprendiz_sem_null.predict([c_m30_x[i]])[0]
-
-    erro_abs = abs(valor_exato - valor_aprox)
-    erro_rel = erro_abs/valor_aprox
-    soma_ea += erro_abs
-    soma_er += erro_rel
-
-print("\n\nErros (sem null): {} {}".format(soma_ea/len(c_m30_x), soma_er/len(c_m30_x)))
-print("R2 sem null: {}".format(aprendiz_sem_null.score(c_m30_x, c_m30_y)))
+    media_ea += soma_ea/len(m30_x_a)
+    media_er += soma_er/len(m30_x_a)
+    print(" {}->Erro abs.: {:.6f}  ||  Erro rel.: {:.6f}  ||  R2: {:.6f}".format(j+1, soma_ea/len(m30_x_a), soma_er/len(m30_x_a), aprendiz_a.score(m30_x_a, m30_y_a)))
 
 
-'''
+print("Média das 30 exec ->Erro abs.: {:.6f}  ||  Erro rel.: {:.6f}  ||  R2: {:.6f}".format(media_ea/n_teste, media_er/n_teste, aprendiz_a.score(m30_x_a, m30_y_a)))
+
+
+print("\n\n---->Dados com valores null substituidos sem limites<----")
+media_ea = media_er = 0
+for j in range(n_teste):
+    aprendiz_b = MLPRegressor()
+    aprendiz_b = aprendiz_b.fit(m70_x_b, m70_y_b)
+    soma_ea = soma_er = 0
+
+    for i in range(len(m30_x_b)):
+        exato = m30_y_b[i]
+        aprox = aprendiz_b.predict([m30_x_b[i]])[0]
+
+        erro_abs = abs(exato - aprox)
+        erro_rel = erro_abs/exato
+
+        soma_ea += erro_abs
+        soma_er += erro_rel
+    
+    media_ea += soma_ea/len(m30_x_b)
+    media_er += soma_er/len(m30_x_b)
+    print(" {}->Erro abs.: {:.6f}  ||  Erro rel.: {:.6f}  ||  R2: {}".format(j+1, soma_ea/len(m30_x_b), soma_er/len(m30_x_b), aprendiz_b.score(m30_x_b, m30_y_b)))
+
+print("Média das 30 exec ->Erro abs.: {:.6f}  ||  Erro rel.: {:.6f}  ||  R2: {:.6f}".format(media_ea/n_teste, media_er/n_teste, aprendiz_b.score(m30_x_b, m30_y_b)))

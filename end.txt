@@ -1,7 +1,7 @@
-E:/IC/Dados/Teste2.0/DATA/alvo_limpa.txt
-E:/IC/Dados/Teste2.0/DATA/vizinhaA_limpa.txt
-E:/IC/Dados/Teste2.0/DATA/vizinhaB_limpa.txt
-E:/IC/Dados/Teste2.0/DATA/vizinhaC_limpa.txt
-E:/IC/Dados/Teste2.0/DATA/dadoscomum.csv
-E:/IC/Dados/Teste2.0/DATA/buff.txt
-E:/IC/Dados/Teste2.0/DATA/Coordenadas.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/alvo_limpa.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/vizinhaA_limpa.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/vizinhaB_limpa.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/vizinhaC_limpa.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/dadoscomum.csv
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/buff.txt
+E:/IC/Dados/Teste_Raio/1_CENTRO_MG_PURO/dados/Coordenadas.txt

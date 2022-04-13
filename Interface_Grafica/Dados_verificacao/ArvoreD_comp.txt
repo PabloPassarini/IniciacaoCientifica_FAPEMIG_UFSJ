@@ -1981,3 +1981,152 @@ media do Erro absoluto: 0.0444265442090807 || média do Erro relativo: 0.08869659
 Tempo de execução: 0.4051642417907715 s
 -------------------------------------------------------------
 
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-13 11:57:41
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.04442654420908076 || média do Erro relativo: 0.08869659689756976
+
+Tempo de execução: 0.23100066184997559 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-13 12:03:09
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.127965 || Erro Absoluto: 0.059313
+
+media do Erro absoluto: 0.059312528077271345 || média do Erro relativo: 0.12796525235846418
+
+Tempo de execução: 0.03491568565368652 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-13 12:58:27
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.04442654420908071 || média do Erro relativo: 0.08869659689756992
+
+Tempo de execução: 0.21413421630859375 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-13 12:58:44
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+Teste n° 2 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+Teste n° 3 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+Teste n° 4 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+Teste n° 5 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.044426544209080814 || média do Erro relativo: 0.08869659689756991
+
+Tempo de execução: 0.8555684089660645 s
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+---- Erros Obtidos a partir da ML Arvore de Decisão ----
+
+Horário dos teste: 2022-04-13 12:58:58
+Porção para treinamento: 70%
+Indicador climático: Temperatura máxima
+
+Parâmetros usados:
+  -> criterion: squared_error
+  -> splitter: best
+  -> max_depth: 10
+  -> min_samples_leaf: 50
+  -> max_features: auto
+  -> max_leaf_nodes: 10
+  -> min_samples_split: 2
+  -> min_weight_fraction_leaf: 0.0
+  -> min_impurity_decrease: 0.0
+  -> ccp_alpha: 0.0
+
+
+---- Resultados Obtidos ----
+
+Teste n° 1 -> Erro Relativo: 0.088697 || Erro Absoluto: 0.044427
+
+media do Erro absoluto: 0.044426544209080765 || média do Erro relativo: 0.08869659689756992
+
+Tempo de execução: 0.2184159755706787 s
+-------------------------------------------------------------
+

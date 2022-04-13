@@ -2,8 +2,6 @@ from tkinter import *
 from tkinter import filedialog as dlg
 from tkinter import messagebox as msg
 from tkinter import ttk
-
-from pyparsing import col
 from tratar import Tratamento
 from ml import Treinamento
 from triangulacao import Triangulaction
@@ -23,6 +21,7 @@ fun_b = '#3CB371' #? Cor de fundo dos botoes
 fun_ap = '#9C444C'
 fun_alt = '#C99418'
 fun_meta_le = '#191970'
+
 
 class Selecionar_Arquivos_win(Toplevel):
     def tratar(self):
@@ -122,8 +121,6 @@ class Selecionar_Arquivos_win(Toplevel):
         self.dir_save.set('E:/IC/Dados/NOVAS REGIOES/AMPA/dados')
 
         Button(self, text='Prosseguir', font='Arial 12 bold', fg='white', bg=fun_b, width=45, command=self.tratar).grid(row=11, column=0, padx=10, pady=2, columnspan=3)
-
-
 
 class Aprendizado_Marquina(Toplevel):
     def int_float(self, val):
